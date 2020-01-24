@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      // 深拷贝拷贝多层,每一级别的数据都会拷贝.
+      var obj = {
+        id: 1,
+        name: 'marron',
+        msg: {
+          age: 18
+        },
+        color:['red','pink']
+      }
+      var o = {}
+      // 封装函数
+      const deepCopy = (newobj, oldobj) => {
+        for (let k in oldobj) {
+          let item = oldobj[k]
+          if (item instanceof Array) {
+            newobj[k] = []
+            deepCopy(newobj[k], oldobj[k])
+          } else if (item instanceof Object) {
+            newobj[k] = {}
+            deepCopy(newobj[k], oldobj[k])
+          } else {
+            newobj[k] = item
+          }
+        }
+      }
+      deepCopy(o, obj)
+      console.log(o)
+      o.msg.age = 20
+      console.log(obj)
+    </script>
+  </body>
+</html>

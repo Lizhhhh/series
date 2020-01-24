@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      // 2. apply() 应用 运用的意思
+      var o = {
+        name: 'andy'
+      }
+
+      function fn(arr) {
+        console.log(this)
+        console.log(arr)
+      }
+      fn.apply(o, ['pink'])
+      // 1. 调用函数 、改变函数内部的this指向
+      // 2. apply的第二个参数是数组的形式
+      // 3. apply的主要应用. 比如我们可以利用 apply 借助于数学内置对象求最大值
+      var arr = [1, 66, 3, 99]
+      console.log(Math.max.apply(Math, arr))
+      console.log(Math.min.apply(Math, arr))
+    </script>
+  </body>
+</html>

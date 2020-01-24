@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+<body>
+  <ul calss="nav">
+    <li>榴莲</li>
+    <li>臭豆腐</li>
+    <li>鲱鱼罐头</li>
+    <li>大猪蹄子</li>
+  </ul>
+  <script>
+      // 闭包应用 - 点击li输出当前li的索引号
+      // 1. 利用动态添加属性的方式
+      // var lis = document.querySelectorAll('li');
+      // for(var i = 0; i < lis.length; i++){
+      //   lis[i].index = i;
+      //   lis[i].onclick  = function () {
+      //     alert(this.index);
+      //   }
+      // }
+
+
+      // 2. 利用闭包的方式得到当前 li 的索引号
+      var lis = document.querySelectorAll('li');
+      for(var i =0; i< lis.length; i++){
+        // 利用 for 循环创建了4个立即执行函数
+        // 立即执行函数,也称为小闭包.因为立即执行函数里面的任何一个函数都可以使用它的i这个变量
+        (function(i){
+          lis[i].onclick = function () {
+            alert(i);
+          }
+        })(i);
+      }
+  </script>
+</body>
+</html>

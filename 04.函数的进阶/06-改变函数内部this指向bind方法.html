@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Document</title>
+  </head>
+  <body>
+    <button>点击</button>
+    <button>点击</button>
+    <button>点击</button>
+    <script>
+      // 改变函数内this指向 js提供了三种方法 call() apply() bind()
+
+      // 3. bind() 绑定 捆绑的意思
+      var o = {
+        name: 'andy'
+      }
+
+      function fn(a, b) {
+        console.log(this)
+        console.log(a + b)
+      }
+      var f = fn.bind(o, 1, 2)
+      f()
+      // 1. 不会调用原来的函数,可以改变原来函数this的指向
+      // 2. 返回的是原函数改变this之后产生的新函数
+      // 3. 如果有的函数,我们不需要立即调用,但是又想改变这个函数内部的this指向.
+      // 4. 栗子: 有一个按钮,当我们点击之后,禁用它,3秒钟之后解除禁用
+      // var btn = document.querySelector('button')
+      // btn.onclick = function() {
+      //   alert('点击成功,按钮禁用3秒')
+      //   this.disabled = true;     // this 指向的是 btn 按钮
+      //   // 三秒钟按钮开启
+      //   setTimeout(function() {
+      //     alert('激活成功,按钮可以重新使用');
+      //     this.disabled = false;    // 使用了bind将函数中的this绑定到btn上面,此时 this 指向btn
+      //   }.bind(this), 3*1000);
+      // }
+      var btns = document.querySelectorAll('button');
+      for (var i = 0; i< btns.length; i++){
+        btns[i].onclick = function () {
+          this.disabled  = true;
+          setTimeout(function(){
+            this.disabled = false;
+          }.bind(this),3*1000);
+        }
+      }
+    </script>
+  </body>
+</html>

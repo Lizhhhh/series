@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      // 利用递归求斐波那契数列(兔子序列) 1、1、2、3、5、8、13、21...
+      // 用户输入一个数字 n 就可以求出 这个数字对应的序列值
+      function fn (n) {
+        if(n === 1 || n === 2) return 1;
+        return fn(n-1) + fn(n-2)
+      }
+      console.log(fn(10));
+    </script>
+  </body>
+</html>
