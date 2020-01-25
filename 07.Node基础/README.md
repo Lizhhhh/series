@@ -37,6 +37,16 @@ Node是一个基于Chrome V8引擎的JavaScript代码执行环境
 ## 3.2 Node.js基础语法
 所有ECMAScript语法在Node环境中都可以使用.
 
+## 3.3 Node.js全局对象global
+在浏览器中全局对象是window,在Node中全局对象是global.
+
+Node中全局对象下有以下方法,可以在任何地方使用,global可以省略
+- console.log()  在控制台中输出
+- setTimeout()   设置定时器
+- clearTimeout()  清除定时器
+- setInterval()   设置间歇定时器
+- clearInterval()  清除间歇定时器
+
 
 # 1. Node.js模块化开发
 ## 1.1 JavaScript开发弊端
