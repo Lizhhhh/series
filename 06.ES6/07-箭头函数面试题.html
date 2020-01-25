@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      var age = 100;
+      var obj = {
+        age: 20,
+        say: () => {
+          console.log(this.age)
+        }
+      }
+      // say使用箭头函数定义,它是在obj对象中定义的. 但是obj对象并未产生作用域.因此say中的this是指向window.而window下面没有声明age属性.因此输出的是undefined
+      obj.say()   // "undefined"
+    </script>
+  </body>
+</html>

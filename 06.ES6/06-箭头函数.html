@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      // // 箭头函数是用来简化函数定义语法的
+      // const fn = () => {
+      //   console.log(123)
+      // }
+      // fn()
+      const sum = (n1, n2) => n1 + n2
+      console.log(sum(3, 5))
+
+
+      // 箭头函数不绑定this, 箭头函数没有自己的this关键字
+      // 如果在箭头函数中使用this, this将指向箭头函数定义位置的this
+
+      const obj = { name: '张三' }
+      function fn() {
+        console.log(this)
+        return () => {
+          console.log(this)
+        }
+      }
+      const resFn = fn.call(obj)
+      resFn();
+      console.log('-------------');
+      fn()();
+      // 以上代码箭头函数被定义在了fn中,因此箭头函数中的this指向fn中的this
+    </script>
+  </body>
+</html>

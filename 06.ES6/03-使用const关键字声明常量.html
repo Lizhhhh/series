@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      // 使用const 关键字声明的变量具有块级作用域
+      // if (true) {
+      //   const a = 10
+      // }
+      // console.log(a) // a is not defined
+
+      // 使用const关键字声明的常量,必须赋初始值
+      const PI = 3.14;
+      const arr = [100 , 200];
+      arr[0] = 123;
+      // arr = [1,2];    // Assignment to constant variable.
+      console.log(arr);
+    </script>
+  </body>
+</html>

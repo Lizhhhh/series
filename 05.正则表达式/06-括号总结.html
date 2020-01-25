@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      // 中括号 字符集合. 匹配方括号中得任意字符.
+      var reg = /^[abc]$/
+      //  a || b || c
+
+      // 大括号 量词符. 里面表示重复次数
+      var reg = /^a{3}$/ // aaa
+      var reg1 = /^abc{3}$/ // abccc
+      console.log(reg1.test('abc'))
+      console.log(reg1.test('abcabcabc'))
+      console.log(reg1.test('abccc'))
+      console.log(reg1.test('abcccc'))
+
+      console.log('--------------');
+      // 小括号 表示优先级
+      var reg2 = /^(abc){3}$/
+      console.log(reg2.test('abc'));
+      console.log(reg2.test('abcabcabc'));
+      console.log(reg2.test('abcccc'));
+
+    </script>
+  </body>
+</html>

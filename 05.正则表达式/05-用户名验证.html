@@ -5,6 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>Document</title>
+    <style>
+      span {
+        color: #aaa;
+        font-size: 14px;
+      }
+      .right {
+        color: green;
+      }
+      .wrong {
+        color: red;
+      }
+    </style>
   </head>
   <body>
     <input type="text" class="uname" /><span class="message">请输入用户名</span>
@@ -17,9 +29,18 @@
       // console.log(reg.test('aa'));
 
       // 用户名赛选,一般要求输入的数量在 6~16 次
-      var reg = /^[a-zA-Z0-9_-]{6,16}$/;
-      console.log(reg.test('andy-red'));
-      console.log(reg.test('andy!007'));
+      var reg = /^[a-zA-Z0-9_-]{6,16}$/
+      var uname = document.querySelector('.uname');
+      var span = document.querySelector('span');
+      uname.onblur = function(){
+        if(reg.test(uname.value)){
+          span.className = "right";
+          span.innerHTML = "用户名合法"
+        } else {
+          span.className = "wrong";
+          span.innerHTML = "用户名不合乎规范";
+        }
+      }
     </script>
   </body>
 </html>

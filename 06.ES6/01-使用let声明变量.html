@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      // let a = 10
+      // console.log(a)
+
+      // if (true) {
+      //   let b = 2
+      // }
+      // console.log(b)    // b is not defined
+
+      // 在一个大括号中,使用let关键字才具有块级作用域, var关键字不具有块级作用域
+      // if (true) {
+      //   let num = 100
+      //   var abc = 200
+      // }
+      // console.log(abc)
+      // console.log(num)
+
+      // // 防止循环比哪里变成全局变量
+      // for (var i = 0; i < 3; i++) {
+      // };
+      // console.log(i)
+      // for(let j = 0; j < 3; j++){
+      // }
+      // console.log(j);   // j is not defined
+
+      // 暂时性死区
+      var tmp = 123;
+      if(true) {
+        tmp = 'abc';    // cannot access 'tmp' before initialization
+        let tmp;
+      }
+    </script>
+  </body>
+</html>
