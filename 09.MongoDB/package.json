@@ -1,0 +1,15 @@
+{
+  "name": "09.MongoDB",
+  "version": "1.0.0",
+  "description": "- 动态网站中的数据都是存储在数据库中的\r - 数据库可以用来持久存储客户端通过表单手机的用户信息\r - 数据库软件本身可以对数据进行高效的管理",
+  "main": "01-connect.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "mongoose": "^5.8.9"
+  }
+}

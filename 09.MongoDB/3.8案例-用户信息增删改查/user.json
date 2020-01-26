@@ -1,0 +1,42 @@
+{
+  "name": "王五",
+  "age": 25,
+  "hobbies": ["篮球","足球","乒乓球"],
+  "email": "wangwu@itcast.cn",
+  "password": "123456"
+}
+{
+  "name": "李四",
+  "age": 24,
+  "hobbies": ["吃饭","睡觉","打豆豆"],
+  "email": "lisi@itcast.cn",
+  "password": "654321"
+}
+{
+  "name": "张三",
+  "age": 23,
+  "hobbies": ["吃饭"],
+  "email": "zhangsan@itcast.cn",
+  "password": "321654"
+}
+{
+  "name": "赵六",
+  "age": 26,
+  "hobbies": ["敲代码","睡觉"],
+  "email": "zhaoliu@itcast.cn",
+  "password": "612345"
+}
+{
+  "name": "王二麻子",
+  "age": 32,
+  "hobbies": ["敲代码"],
+  "email": "wangermazi@itcast.cn",
+  "password": "123456"
+}
+{
+  "name": "狗蛋",
+  "age": 14,
+  "hobbies": ["敲代码"],
+  "email": "goudan@itcast.cn",
+  "password": "612345"
+}
