@@ -1,0 +1,3 @@
+{{include './common/header.art'}}
+<div>{{ msg }}</div>
+{{include './common/footer.art'}}

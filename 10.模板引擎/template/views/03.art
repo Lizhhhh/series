@@ -1,0 +1,40 @@
+<!-- 标准语法 -->
+<table>
+  <thead>
+    <tr>
+      <td>姓名</td>
+      <td>年龄</td>
+      <td>性别</td>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      {{each users}}
+      <td>{{ $value.name }}</td>
+      <td>{{ $value.age }}</td>
+      <td>{{ $value.sex }}</td>
+      {{/each}}
+    </tr>
+  </tbody>
+</table>
+
+<!-- 原始语法 -->
+
+<table>
+  <thead>
+    <tr>
+      <td>姓名</td>
+      <td>年龄</td>
+      <td>性别</td>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <% for(let i =0 ; i< users.length; i++){%>
+      <td><%= users[i].name %></td>
+      <td><%= users[i].age %></td>
+      <td><%= users[i].sex %></td>
+      <%} %>
+    </tr>
+  </tbody>
+</table>

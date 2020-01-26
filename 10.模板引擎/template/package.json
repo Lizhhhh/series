@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "art-template": "^4.13.2",
+    "dateformat": "^3.0.3"
+  }
+}

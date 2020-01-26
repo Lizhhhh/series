@@ -1,0 +1,4 @@
+{{extend './common/layout.art'}}
+{{block "content"}}
+  {{ dateformat(time,"yyyy-mm-dd HH:MM:ss") }}
+{{/block}}
