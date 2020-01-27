@@ -1,0 +1,102 @@
+{{extend './common/layout.art'}}
+{{block 'main'}}
+<!-- 头部 -->
+<!-- 子模板的相对路径就是当前文件,因为它是由模板引擎解析的 -->
+{{include './common/header.art'}}
+<!-- 主体内容 -->
+<div class="content">
+  <!-- 侧边栏-->
+  {{include './common/aside.art'}}
+  <!-- 侧边栏 -->
+  <div class="main">
+    <!-- 分类标题 -->
+    <div class="title">
+      <h4>用户</h4>
+      <span>找到1个用户</span>
+      <a href="article-edit.html" class="btn btn-primary new">新增用户</a>
+    </div>
+    <!-- 内容列表 -->
+    <table class="table table-striped table-bordered table-hover custom-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>用户名</th>
+          <th>邮箱</th>
+          <th>作者</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>5b9a716cb2d2bf17706bcc0a</td>
+          <td>JavaScript基础一: 基本介绍</td>
+          <td>2020-01-22</td>
+          <td>Marron</td>
+          <td>
+            <a
+              href="article-edit.html"
+              class="glyphicon glyphicon-remove"
+              datra-toggle="modal"
+              data-target=".confirm-modal"
+            ></a>
+          </td>
+        </tr>
+        <tr>
+          <td>5b9a716cb2d2bf17706bcc0a</td>
+          <td>JavaScript基础二； 代码书写位置</td>
+          <td>2020-01-23</td>
+          <td>Marron</td>
+          <td>
+            <a
+              href="article-edit.html"
+              class="glyphicon glyphicon-remove"
+              datra-toggle="modal"
+              data-target=".confirm-modal"
+            ></a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <!-- 分页 -->
+    <ul class="pagination">
+      <li>
+        <a href="#">
+          <span>&laquo;</span>
+        </a>
+      </li>
+      <li><a href="#">1</a></li>
+      <li><a href="#">2</a></li>
+      <li><a href="#">3</a></li>
+      <li><a href="#">4</a></li>
+      <li><a href="#">5</a></li>
+      <li>
+        <a href="#">
+          <span>&raquo;</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+</div>
+<!-- 删除确认弹出框 -->
+<div class="modal fade confirm-modal">
+  <div class="modal-dialog modal-lg">
+    <form class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">
+          <span>&times;</span>
+        </button>
+        <h4 class="modal-title">请确认</h4>
+      </div>
+      <div class="modal-body">
+        <p>您确定要删除这篇文章吗?</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">
+          取消
+        </button>
+        <input type="submit" class="btn btn-primary" />
+      </div>
+    </form>
+  </div>
+</div>
+{{/block}}
