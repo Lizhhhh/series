@@ -1,0 +1,6 @@
+<h1>List页面</h1>
+<div>
+  {{each users}}
+  <p>姓名: {{ $value.name }} - 年龄: {{ $value.age }}</p>
+  {{/each}}
+</div>

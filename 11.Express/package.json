@@ -1,0 +1,18 @@
+{
+  "name": "11.Express",
+  "version": "1.0.0",
+  "description": "Express是一个基于`Node平台`的`web应用开发框架`,它提供了一系列的强大特性,帮助你`创建各种Web应用`.我们可以使用`npm install express`命令进行下载",
+  "main": "01.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "art-template": "^4.13.2",
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "express-art-template": "^1.0.1"
+  }
+}
