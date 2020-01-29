@@ -2,10 +2,45 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>文章详情</title>
+  <link rel="stylesheet" href="/home/css/base.css">
+  <link rel="stylesheet" href="/home/css/article.css">
 </head>
 <body>
-  <h1>views/home/article.html</h1>
+  <!--头部框架开始-->
+  <div class="header">
+    <div class="w1100">
+      <!--网站logo开始-->
+      <h1 class="logo fl">
+        <a href="default.html"><img src="images/logo.png" alt="Marron"></a>
+      </h1>
+      <!--网站logo结束-->
+      <!--网站导航开始-->
+      <ul class="navigation fr">
+        <li>
+          <a href="index.html">首页</a>
+        </li>
+        <li>
+          <a href="#">登录</a>
+        </li>
+      </ul>
+      <!--网站导航结束-->
+    </div>
+  </div>
+  <!--头部框架结束-->
+  <!--文章框架开始-->
+  <div class="article">
+    <div class="w1100">
+      <div class="container">
+        <div class="article-header">
+          <h3 class="article-title">阿里巴巴旗下的1688 - VR市场 打造批发新体验</h3>
+          <div class="article-info">
+            <span class="author">悦陶</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>

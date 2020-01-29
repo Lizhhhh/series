@@ -3,9 +3,6 @@ const path = require('path')
 const morgan = require('morgan')
 const app = express()
 
-// 使用config
-const config = require('config');
-console.log(config.get('title'))
 
 if (process.env.NODE_ENV === 'development') {
   console.log('当前环境是开发环境')
@@ -50,7 +47,7 @@ app.use('/admin', require('./middleware/loginGuard'))
 app.use('/home', home)
 app.use('/admin', admin)
 
-// 错误处理 -> 重定向 -> 路由守卫
+// 错误 -> 路由守卫
 app.use(require('./middleware/errorGuard.js'))
 
 app.listen(80, () => {
