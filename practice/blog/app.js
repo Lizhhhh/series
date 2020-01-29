@@ -1,6 +1,18 @@
 const express = require('express')
 const path = require('path')
+const morgan = require('morgan')
 const app = express()
+
+// 使用config
+const config = require('config');
+console.log(config.get('title'))
+
+if (process.env.NODE_ENV === 'development') {
+  console.log('当前环境是开发环境')
+  app.use(morgan('dev'))
+} else {
+  console.log('当前环境是生产环境')
+}
 
 // 连接数据库
 require('./model/connect')
@@ -16,6 +28,10 @@ app.use(express.static(path.join(__dirname, 'public')))
 app.set('views', path.join(__dirname, 'views')) // 模板的路径
 app.set('view engine', 'art') // 模板的默认后缀
 app.engine('art', require('express-art-template')) // 使用什么模板引擎
+// 在模板引擎中使用dateformat
+const template = require('art-template')
+const dateformat = require('dateformat')
+template.defaults.imports.dateformat = dateformat
 
 // 配置获取post参数
 const bodyParser = require('body-parser')

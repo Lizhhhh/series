@@ -717,10 +717,48 @@ run()
 ```
 
 
-## 2.12 在模板引擎中使用事件格式化
-
+## 2.12 在模板引擎中使用dateformat
 ```js
+// app.js
+const template = require('art-template')
+const dateformat = require('dateformat');
+template.defaults.imports.dateformat = dateformat;
+
+// 使用
+{{ dateFormat(time, 'yyyy-mm-dd hh:mm:SS') }}
 ```
+
+## 2.13 数据分页
+```js
+const pagination = require('mongoose-sex-page');
+pagination(集合构造函数).page(1).size(20).display(8).exec();
+```
+参数说明:
+- `page`: 当前页
+- `pages`: 总共的页数
+- `size`: 每页显示的数据条数
+- `display`: 指定要向客户端一次显示的页码数量
+- `exec`: 向数据库发送查询请求
+- `total`: 总共的数据条数
+- `records`: 查询出来的具体数据
+
+- 数据分页使用栗子
+```js
+const {Article} = require('../../model/article')
+const pagination = require('mongoose-sex-page');
+module.exports = async(req, res) =>{
+  const { page } = req.query || 1;
+  const articles = await pagination(Article)
+    .find()
+    .page(page)
+    .size(2)
+    .display(3)
+    .populate('author')   // 关联查询
+    .exec()
+}
+```
+
+#
 
 # 3. 项目包含的知识点
 
@@ -898,4 +936,71 @@ reader.onload = function () {
 ```
 
 
-#
+## 3.5 mongoDB数据库添加账号
+1. 以系统管理员的方式运行powershell
+2. 连接数据库 mongo
+3. 查看数据库: `show dbs`
+4. 切换到admin数据库: `use admin`
+5. 创建超级管理员账户: `db createUser({user: 'root', pwd: 'root', roles: ['root']})`
+6. 切换到blog数据: `use blog`
+7. 创建普通账号: `db.createUser({user: 'marron', pwd: 'marron', roles: ['readWrite']})`
+8. 卸载mongodb服务
+    1. 停止服务: `net stop mongodb`
+    2. 删除服务: `mongod --remove`
+9. 创建mongodb服务
+    `mongod --logpath="C:\Program Files\MongoDB\Server\4.2\log\mongod.log" --dbpath="C:\Program Files\MongoDB\Server\4.2\data" --install --auth`
+10. 启动mongodb服务: `net start mongodb`
+11. 在项目中使用账号连接数据库:`mongoose.connect('mongodb://user:pass@localhost:port/database')`
+
+## 3.6 开发环境与生产环境
+- 什么是开发环境与生产环境
+> 环境,就是项目运行的地方,当项目处于开发阶段,项目运行在开发人员的电脑上,项目所处的环境就是开发环境。当项目开发完成以后,要将项目放到真实的网站服务器电脑中运行,项目所处的环境就是生产环境.
+
+
+- 为什么要区分开发环境与生产环境
+> 因为在不同的环境中,项目的配置是不一样的,需要在项目代码中判断当前项目运行的环境,根据不同的环境应用不同的项目配置.
+
+- 如何获取系统环境变量
+```js
+// 获取系统环境变量,返回值是对象
+console.log(process.env.NODE_ENV == 'development'){
+  // 当前环境是开发环境
+  console.log('当前环境是开发环境');
+} else {
+  // 当前环境是生产环境
+  console.log('当前环境是生产环境');
+}
+```
+
+## 3.7 morgan
+- 在开发环境中,将客户端向服务器的请求打印到控制台中
+```js
+const morgan = require('morgan');
+if(process.env.NODE_ENV === 'development') {
+  // 开发环境
+  app.use(morgan('dev'));   // 在开发环境中,将客户端发送到服务器的请求信息打印到控制台中
+} else {
+  console.log('当前是生产环境')
+}
+```
+
+
+## 3.8 第三方模块config
+> 作用: 允许开发人员将不同运行环境下的应用配置信息抽离到单独的文件中,模块内部自动判断当前应用的运行环境,并读取对应的配置信息,极大提供应用配置信息的维护成本,避免了当运行环境重复的多次切换时,手动到项目代码中修改配置信息.
+
+#### 使用步骤
+1.使用`npm install config`命令下载模块
+2.在项目的根目录下新建config文件夹
+3.在config文件夹下新建default.json、development.json、production.json文件
+4.在项目中通过require方法,将模块进行导入
+5.使用模块内部提供的get方法获取配置信息
+```js
+const config = require('config');
+console.log(config.get('title'));
+// 根据生产环境和开发环境.
+```
+
+- 将敏感配置信息存储在环境变量中
+1.在config文件夹中建立custom-environment-variables.json文件
+2.配置项属性的值填写系统环境变量的名字
+3.项目运行时config模块查找系统环境变量,并读取其值作为当前配置项属于的值

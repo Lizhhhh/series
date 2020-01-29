@@ -1,0 +1,9 @@
+{
+  "title": "博客管理系统 --- 开发环境",
+  "db":{
+    "user": "marron",
+    "host": "localhost",
+    "port": "27017",
+    "name": "blog"
+  }
+}
