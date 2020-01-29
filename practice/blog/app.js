@@ -27,10 +27,15 @@ app.use(bodyParser.urlencoded({ extended: false }))
 // 引入路由模块
 const home = require('./route/home')
 const admin = require('./route/admin')
+
+// 拦截 -> 路由守卫
 app.use('/admin', require('./middleware/loginGuard'))
 
 app.use('/home', home)
 app.use('/admin', admin)
+
+// 错误处理 -> 重定向 -> 路由守卫
+app.use(require('./middleware/errorGuard.js'))
 
 app.listen(80, () => {
   console.log('[Server]The server is running at http://localhost')

@@ -11,8 +11,8 @@
     <!-- 分类标题 -->
     <div class="title">
       <h4>文章</h4>
-      <span>找到1篇文章</span>
-      <a href="article-edit.html" class="btn btn-primary new">发布新文章</a>
+      <span>--- {{ articles && articles.length }}篇文章</span>
+      <a href="/admin/article-edit" class="btn btn-primary new">发布新文章</a>
     </div>
     <!-- 内容列表 -->
     <table class="table table-striped table-bordered table-hover custom-table">
@@ -26,34 +26,21 @@
         </tr>
       </thead>
       <tbody>
+        {{each articles}}
         <tr>
-          <td>5b9a716cb2d2bf17706bcc0a</td>
-          <td>JavaScript基础一: 基本介绍</td>
-          <td>2020-01-22</td>
-          <td>Marron</td>
+          <td>{{@$value._id }}</td>
+          <td>{{ $value.title }}</td>
+          <td>{{ $value.publishDate }}</td>
+          <td>{{ $value.author.username }}</td>
           <td>
-            <a
-              href="article-edit.html"
-              class="glyphicon glyphicon-remove"
-              datra-toggle="modal"
+            <a href="article-edit">编辑</a>
+            <i
+              data-toggle="modal"
               data-target=".confirm-modal"
-            ></a>
+            >删除</i>
           </td>
         </tr>
-        <tr>
-          <td>5b9a716cb2d2bf17706bcc0a</td>
-          <td>JavaScript基础二； 代码书写位置</td>
-          <td>2020-01-23</td>
-          <td>Marron</td>
-          <td>
-            <a
-              href="article-edit.html"
-              class="glyphicon glyphicon-remove"
-              datra-toggle="modal"
-              data-target=".confirm-modal"
-            ></a>
-          </td>
-        </tr>
+        {{/each}}
       </tbody>
     </table>
     <!-- 分页 -->

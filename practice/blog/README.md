@@ -357,6 +357,7 @@ const serializeToJson = form => {
 ### 2.1.3 前端(简单的)表单的验证
 
 - 如果其中一项没有输入,阻止表单提交,并提示
+
 ```js
 $('#loginForm').on('submit', function() {
   const result = serializaToJson($(this))
@@ -375,7 +376,9 @@ $('#loginForm').on('submit', function() {
 ```
 
 ### 2.1.4 后端验证邮箱地址或密码是否为空
-- 配置`body-parser`获取post请求的参数
+
+- 配置`body-parser`获取 post 请求的参数
+
 ```js
 // 配置获取post参数
 const bodyParser = require('body-parser')
@@ -384,8 +387,10 @@ const bodyParser = require('body-parser')
 // 拦截所有请求
 app.use(bodyParser.urlencoded({ extended: false }))
 ```
+
 - 在客户端判断,邮箱和密码是否为空,并给予提示
-因为浏览器可以通过禁用javascript来跳过验证.
+  因为浏览器可以通过禁用 javascript 来跳过验证.
+
 ```js
 admin.post('/login', (req, res) => {
   // 接收请求参数
@@ -396,75 +401,353 @@ admin.post('/login', (req, res) => {
   }
 })
 ```
-### 2.1.5 设置错误模板
-- 错误模板: `/admin/error.art`
-```html
-{{include './common/layout.art'}}
-{{block 'main'}}
-    {{msg}}
-{{/block}}
 
-{{block 'script'}}
+### 2.1.5 设置错误模板
+
+- 错误模板: `/admin/error.art`
+
+```html
+{{include './common/layout.art'}} {{block 'main'}} {{msg}} {{/block}} {{block
+'script'}}
 <script type="text/javascript">
-  setTimeout(()=>{
-    location.href ="/admin/login"
+  setTimeout(() => {
+    location.href = '/admin/login'
   }, 3000)
 </script>
 {{/block}}
 ```
+
 - 返回错误模板
+
 ```js
-admin.post('/login',(req, res)=>{
-  res.render('admin.error',{
-    msg: "邮箱地址或者密码错误"
+admin.post('/login', (req, res) => {
+  res.render('admin.error', {
+    msg: '邮箱地址或者密码错误'
   })
 })
 ```
 
 ### 2.1.6 从数据库获取用户信息并验证
-- 从`/model/user.js`中得到User规则,并根据邮箱获取用户信息
-- `/route/admin.js`
-```js
-const { User } = require('../model/user.js');
 
-admin.post('/login', async(req, res)=>{
-  const {email, password} = req.body;
-  let user = await User.findOne({email});
-  if(user ==null ||user.password !== password){
-    res.status(400).render('/admin/error',{
-      msg: "邮箱地址或者密码错误"
+- 从`/model/user.js`中得到 User 规则,并根据邮箱获取用户信息
+- `/route/admin.js`
+
+```js
+const { User } = require('../model/user.js')
+
+admin.post('/login', async (req, res) => {
+  const { email, password } = req.body
+  let user = await User.findOne({ email })
+  if (user == null || user.password !== password) {
+    res.status(400).render('/admin/error', {
+      msg: '邮箱地址或者密码错误'
     })
   }
 })
 ```
 
+## 2.2 新增用户
+
+### 2.2.1 在用户列表页面上为新增用户添加链接
+
+```html
+<a href="/admin/user-edit" class="btn btn-primary new">新增用户</a>
+```
+
+### 2.2.2 实现添加用户的路由
+
+- 在准备好了添加用户的页面之后
+- 下面监听路由,并获取数据: `/route/admin/userEdit.js`
+
+```js
+module.exports = (req, res) => {
+  res.send(req.body)
+}
+```
+
+之所以能使用`req.body`获取数据,是因为在`app.js`中配置了:
+
+```js
+const bodyParser = require('body-parser')
+app.use(bodyParser.urlencoded({ extended: false }))
+```
+
+### 2.2.3 对获取的参数进行验证
+
+- 使用 joi 进行验证: `/rote/admin/userEdit.js`
+
+```js
+const Joi = require('joi')
+module.exports = async (req, res) => {
+  // 定义对象的验证规则
+  const schema = {
+    username: Joi.string()
+      .required()
+      .min(2)
+      .max(20)
+      .error(new Error('用户名不符合规范')),
+    email: Joi.string()
+      .email()
+      .required()
+      .error(new Error('邮箱格式不符合要求')),
+    password: Joi.string()
+      .required()
+      .regex(/^[a-zA-Z0-9]{6,18}$/)
+      .error(new Error('密码格式不符合要求')),
+    role: Joi.string()
+      .required()
+      .valid('normal', 'admin')
+      .error(new Error('角色值不符合要求')),
+    state: Joi.number()
+      .valid(0, 1)
+      .error(new Error('状态值不符合要求'))
+  }
+  try {
+    await Joi.validate(req.body, schema)
+  } catch (ex) {
+    res.redirect(`/admin/user-edit?message=${ex.message}`)
+    return
+  }
+  res.send('验证通过')
+}
+```
+
+- 验证邮箱在数据库中是否已经存在
+
+```js
+const { User } = require('./model/user.js')
+module.exports = async (req, res) => {
+  // 假设到达这里,用户的格式已经验证通过
+  // 下面验证邮箱是否是唯一的
+  let user = await User.find({ email: req.body.email })
+  if (user != null) {
+    res.redirect(`/admin/user-edit?message=邮箱已存在`)
+  } else {
+    res.send('验证成功,将数据插入到数据库')
+  }
+}
+```
+
+### 2.2.4 将用户信息存入数据库中
+- 验证通过了,需要将用户信息存入数据库(磁盘中)
+- 在将数据添加到数据库之前,先需要对密码进行加密.
+- 然后跳转到用户列表页面
+```js
+const bcrypt = require('bcryptjs');
+const {User} = require('../../model/user.js')
+module.exports = async (req, res) => {
+  const salt = await bcrypt.genSalt(10);
+  const pass = await bcrypt.hash(req.body.password, salt);
+  req.body.password = pass;
+  User.create(req.body);
+  req.redirect('/admin/user')
+}
+```
+
+## 2.3 分页功能实现
+1. 通过get请求传递分页信息: `http://localhost/admin/user?page=1`
+2. 默认显示第一页,且每页显示10条数据(`pageSize`)
+3. 获取(`User.countDocuments`)总的用户数(`count`).
+4. 计算总页数(`total`);
+5. 分页查询使用到了`limit`和`skip`
+```js
+module.exports = async (req, res) =>{
+  const page = req.query.page || 1;
+  const pageSize = 10;
+  const count = await User.countDocuments({});
+  const total = Math.ceil(count/pageSize);
+  const start = (page - 1) * pageSize;
+  const users = await User.find({}).skit(start).limit(pageSize)
+  // 渲染用户列表
+  res.render('/admin/user',{
+    users,
+    total,
+    page
+  })
+}
+```
+
+## 2.4 修改用户的实现
+1. 将要修改的用户ID传递到服务器端
+2. 建立用户信息修改功能对应的路由
+3. 接收客户端表单传递过来的请求参数(`req.body`)
+4. 根据id查询用户信息,并将客户端传递过来的密码和数据库中的密码进行比对
+5. 如果对比失败,对客户端做出响应
+```js
+const { User } = require('../../model/user')
+const bcrypt = require('bcryptjs')
+module.exports = async (req, res, next) => {
+  const { id: _id } = req.query
+  const { password } = req.body
+  // 从数据库中根据_id找到用户
+  const user = await User.findOne({ _id })
+  // 验证密码
+  const isValid = await bcrypt.compare(password, user.password)
+  if (isValid) {
+    // 密码比对成功.
+    // 1.将用户信息(需要使用加密后的密码)更新到数据库中
+    // 2.重定向到用户列表页面
+    req.body.password = user.password
+    await User.updateOne({_id}, req.body);
+    res.redirect('/admin/user')
+  } else {
+    // 密码验证失败
+    return next(
+      JSON.stringify({ path: '/admin/user-edit', message: '密码比对失败', id: _id })
+    )
+  }
+}
+```
+
+## 2.5 用户信息删除
+1.在确认删除框中添加隐藏域用以存储要删除的用户的ID值
+```html
+<input type="hidden" name="id">
+```
+2.为删除按钮添加自定义属性用于存储要删除用户的ID值
+3.为删除按钮添加点击事件,在点击事件处理函数中获取自定义属性中存储的ID值并将ID值存储在表单的隐藏域中
+4.为删除表单添加提交地址以及提交方式
+```html
+<form class="model-content" action="/admin/delete" method="get">
+
+</form>
+```
+5.在服务端建立删除功能路由
+6.接收客户端传递过来的id参数
+7.根据id删除用户
+
+## 2.6 创建文章集合,并将之与用户集合进行关联
+- 集合关联
+```js
+const mongoose = require('mongoose');
+
+const articleSchema = new mongoose.Schema({
+  author:{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User"
+  }
+})
+```
+- 关联查找
 
 
 
+## 2.7 上传文件的表单
+- 上传文件的表单要求,传输的数据是二进制的形式.
+- form表单有一个 `enctype`属性: 表示表单提交的编码类型
+- `enctype`: 默认值是 `application/x-www-form-urlencoded` -> `name=zhangsan&age=20`
+- `multipart/form-data`: 将表单数据编码成二进制类型
 
+## 2.8 服务器端接收表单传递的二进制数据
+- `formidable`: 解析表单,支持get请求参数、post请求参数、文件上传.
+```js
+// 引入formidable模块
+const formidable = require('formidable');
+const path = require('path');
+// 1.创建表单解析对象
+const form = new formidable.IncomingForm();
+// 2.设置文件上传路径
+form.uploadDir = path.join(__dirname, '../','../','public','uploads');
+//是否保留表单上传文件的扩展名
+form.keepExtensions = false;
+// 对表单进行解析
+form.parse(req,(err, fields, files) =>{
+  // 1.err错误对象 如果表单解析失败 err里面存储错误信息, 如果表单解析成功.err为空
+  // 2.fields 存储普通请求参数, Object类型
+  // 3.files 存储上传的文件信息, Object类型
+  res.send(files)
+})
+```
+
+## 2.9 创建模板引擎通用的数据
+```js
+admin.get('/login',(req, res)=>{
+  // express默认把 app 挂在到 req.app上
+  req.app.locals.publicData = '我是模板引擎公共数据'
+})
+```
+
+## 2.10 前端读取文件
+- 使用表单上传文件
+```html
+<input type="file" name="cover" id="file"/>
+```
+- 将上传的文件显示在浏览器上
+```js
+//
+var file = document.quertSelector('#file');
+// 当用户选择完文件以后执行
+file.onchange = function () {
+  //  1. 创建文件读取对象
+  var reader = new FileReader();
+  // 2.读取文件
+  // reader.readAsDateURL(this.files);
+  // reader.onload = function(){
+
+  // }
+}
+```
+
+## 2.11 多集合联合查询
+```js
+const mongoose = require('mongoose');
+// 先建立关联
+const userSchema = new mongoose.Shcema({})
+const articleSchema = new mongoose.Schema({
+  title:{
+    type: String,
+    minlength: 4,
+    maxlength: 20,
+    required:[true, "请填写文章标题"]
+  },
+  author:{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: [true, "请传递作者"]
+  }
+})
+const User = mongoose.model('User', userSchema);
+const Article = mongoose.model('Article', articleSchema);
+// 再联合查询
+const run = async()=>{
+  const articles = await Article.find().populate('author')
+  console.log(articles)
+}
+run()
+```
+
+
+## 2.12 在模板引擎中使用事件格式化
+
+```js
+```
 
 # 3. 项目包含的知识点
 
 ## 3.1 密码加密 bcrypt
+
 哈希加密是单程加密方式: 1234 => abcd
 在加密的密码中加入随机字符串可以增加密码被破解的难度.
 
-### 3.1.1 bcrypt基本语法
+### 3.1.1 bcrypt 基本语法
+
 ```js
 // 导入bcrypt
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcrypt')
 // 生成随机字符串 gen => generate 生成 salt 盐
-let salt = await bcrpt.genSalt(10);
+let salt = await bcrpt.genSalt(10)
 // 使用随机字符串对密码进行加密
-let pass = await bcrpt.hash('明文密码', salt);
+let pass = await bcrpt.hash('明文密码', salt)
 ```
 
-### 3.1.2 bcrypt的环境依赖
+### 3.1.2 bcrypt 的环境依赖
+
 1. `python 2.x`
 2. `node-gyp`: `npm install -g node-gyp`
-3. `window-build-tools`: `npm install --global --production windows-build-tools`(下载了10min)
+3. `window-build-tools`: `npm install --global --production windows-build-tools`(下载了 10min)
 4. `bcrypt`: `npm install bcryptjs`
 5. 使用
+
 ```js
 // 导入bcrypt
 const bcrypt = require('bcryptjs')
@@ -483,55 +766,59 @@ async function run() {
 }
 run()
 ```
+
 - 密码的比对
+
 ```js
-let isEqual = await bcrypt.compare('明文密码','加密密码');
+let isEqual = await bcrypt.compare('明文密码', '加密密码')
 ```
 
-## 3.2 cookie和session
+## 3.2 cookie 和 session
 
-### 3.2.1 cookie和session的基本概念
-- 由于HTTP协议的无状态性,当一次连接断开后. 服务器并不会记录用户是否登录. 因此需要引入 cookie/session 机制
-`cookie`: 浏览器在电脑硬盘中开辟的一块空间,主要供服务器端存储数据
-- cookie中的数据是以域名的形式进行区分的.
-- cookie中的数据是有过期时间的,超过时间数据会被浏览器自动删除.
-- cookie中的数据会随着请求被自动发送到服务器
+### 3.2.1 cookie 和 session 的基本概念
 
-1.客户端第一次向服务器端发送请求的时候,是不存在cookie的.
-2.服务端验证客户端,会响应一个cookie给客户端.
-3.客户端验证通过后,在发送请求会自动带上cookie
+- 由于 HTTP 协议的无状态性,当一次连接断开后. 服务器并不会记录用户是否登录. 因此需要引入 cookie/session 机制
+  `cookie`: 浏览器在电脑硬盘中开辟的一块空间,主要供服务器端存储数据
+- cookie 中的数据是以域名的形式进行区分的.
+- cookie 中的数据是有过期时间的,超过时间数据会被浏览器自动删除.
+- cookie 中的数据会随着请求被自动发送到服务器
 
-`session`:实际上就是一个对象,存储在服务器端的内存中,在session对象中也可以存储多条数据,每一条数据都有一个sessionid做为唯一标识.
+  1.客户端第一次向服务器端发送请求的时候,是不存在 cookie 的. 2.服务端验证客户端,会响应一个 cookie 给客户端. 3.客户端验证通过后,在发送请求会自动带上 cookie
 
+`session`:实际上就是一个对象,存储在服务器端的内存中,在 session 对象中也可以存储多条数据,每一条数据都有一个 sessionid 做为唯一标识.
 
-<font color=red>注意:cookie在客户端的磁盘中,session在服务端的内存中</font>
+<font color=red>注意:cookie 在客户端的磁盘中,session 在服务端的内存中</font>
 
-### 3.2.2 cookie和session的使用
+### 3.2.2 cookie 和 session 的使用
+
 1. [client] --> 邮件地址、密码 --> [server]
-2. server端,对邮箱地址、密码进行验证,若通过则生成 sessionid
-3. [client] <--  sessionid(存储在客户端的cookie中) <-- [server]
+2. server 端,对邮箱地址、密码进行验证,若通过则生成 sessionid
+3. [client] <-- sessionid(存储在客户端的 cookie 中) <-- [server]
 4. 客户端再次登录
 5. [client] --> cookie [server]
-6. 服务端,获取cookie中的 sessionid,验明身份后,响应数据
+6. 服务端,获取 cookie 中的 sessionid,验明身份后,响应数据
 
 ### 3.2.3 实战: cookie 与 session
+
 ```js
-const session = requier('express-session');
-app.use(session({secret: 'secret key'}));
-admin.post('/login',async(req, res)=>{
-  const {email, password} = req.body;
-  const user = await User.findOne({email});
+const session = requier('express-session')
+app.use(session({ secret: 'secret key' }))
+admin.post('/login', async (req, res) => {
+  const { email, password } = req.body
+  const user = await User.findOne({ email })
   // 假设登录成功
-  req.session.username = user.username;   // 此处能用req.session是在app.js中使用app.use方法进行了拦截
+  req.session.username = user.username // 此处能用req.session是在app.js中使用app.use方法进行了拦截
 })
 ```
 
 ### 3.2.3 登录成功后重定向到用户列表页
+
 - 重定向到用户列表页
+
 ```js
-admin.post('/login',async(req, res)=>{
-  const {email, password} = req.body;
-  const user = await User.findOne({email});
+admin.post('/login', async (req, res) => {
+  const { email, password } = req.body
+  const user = await User.findOne({ email })
   // 假设登录成功
   // 重定向到用户列表页
   req.redirect('/admin/user')
@@ -539,10 +826,12 @@ admin.post('/login',async(req, res)=>{
 ```
 
 ### 3.2.4 未登录时的登录拦截
+
 - 1.当访问的路由为 '/admin'时,先判断用户是否登录(req.session.username)
 - 2.若为登陆,重定向到 '/admin/login'
 - 3.判断用户是否是申请访问`admin/login`
-- 使用express提供的中间件进行拦截.
+- 使用 express 提供的中间件进行拦截.
+
 ```js
   if (req.url !== '/login') {
     // 访问的不是登录页面
@@ -558,3 +847,55 @@ admin.post('/login',async(req, res)=>{
   }
 })
 ```
+
+## 3.3 Joi
+
+JavaScript 对象的规则描述语言和验证器
+
+```js
+const Joi = require('joi')
+const schema = {
+  username: Joi.string()
+    .alphanum()
+    .min(3)
+    .max(30)
+    .required()
+    .error(new Error('错误信息')),
+  password: Joi.string().regex(/^[a-zA-Z0-9]{3,30}$/),
+  access_token: [Joi.string(), Joi.number()],
+  birthyear: Joi.number()
+    .integer()
+    .min(1900)
+    .max(2013),
+  email: Joi.string().email()
+}
+Joi.validate({ username: 'abc', birthyear: 1994 }, schema)
+```
+
+- `.string()`: 只能是字符串
+- `.alphanum()`: 只能是字母或数字
+- `.min()`: 最小长度
+- `.max()`: 最大长度
+- `.requred()`: 必须
+- `.error()`: 报错信息
+- `.regex()`: 使用正则进行验证
+- `[Joi.string(), Joi.number()]`: 数组类型,数组内容可以是字符串或数值
+- `.integer()`:整数
+- `.email()`: 邮箱验证
+
+
+## 3.4 文件读取(前端) FileReader
+```js
+// 创建文件读取对象
+var reader = new FileReader();
+reader.readAsDataURL('文件');
+reader.onload = function () {
+  console.log(reader.result);
+}
+// 注: 机器看的图片是一长串二进制编码.
+// javascript读取文件的接口是一个异步方法.
+// 它提供了一个onload事件,当文件读取结束时执行.
+```
+
+
+#

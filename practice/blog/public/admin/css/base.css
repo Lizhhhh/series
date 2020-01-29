@@ -3,6 +3,9 @@ body {
   height: 100%;
   margin: 0;
 }
+.active {
+  background-color: #fff;
+}
 
 form {
   width: 500px;
@@ -60,11 +63,26 @@ form {
   border-radius: 15px;
 }
 
-.main {
+.content .main {
   flex: 8;
   padding: 25px;
   border-radius: 15px;
   margin-left: 5px;
+}
+
+.content .main .form-container {
+  height: 300px;
+  padding: 15px;
+  margin: 100px auto;
+  border-top: 2px solid blue;
+  margin-top: 0 !important;
+  width: 100%;
+}
+
+
+.content .main .title .new {
+  float: right;
+  margin-bottom: 15px;
 }
 
 .menu {

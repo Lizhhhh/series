@@ -1,4 +1,4 @@
-const guard = (req, res, next) => {
+module.exports = (req, res, next) => {
   if (req.url !== '/login') {
     // 访问的不是登录页面
     // 判断用户是否登录
@@ -12,4 +12,3 @@ const guard = (req, res, next) => {
     next()
   }
 }
-module.exports = guard
