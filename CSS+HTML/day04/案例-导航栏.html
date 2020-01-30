@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>导航栏案例</title>
+    <style>
+      * {
+        padding: 0;
+        margin: 0;
+      }
+      li {
+        list-style: none;
+      }
+      a {
+        text-decoration: none;
+      }
+      .banner {
+        width: 760px;
+        height: 150px;
+        background-color: pink;
+        margin: 0 auto;
+      }
+      .banner img {
+        width: 760px;
+        height: 150px;
+      }
+      .nav {
+        width: 760px;
+        height: 32px;
+        margin: 0 auto;
+        background-color: aquamarine;
+      }
+      .nav li {
+        margin: 0 auto;
+        float: left;        /* 用了浮动之后 类似于inline-block */
+        line-height: 32px;
+      }
+      .nav li a {
+        color: white;
+        padding: 5px;
+        border-left: 1px solid white;
+        font-size: 12px;
+      }
+      .nav li a:hover {
+        background-color: rgba(0, 0, 0, 0.2);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- 广告条 -->
+    <div class="banner">
+      <img src="../lib/pics/banner.jpg" alt="" />
+    </div>
+    <!-- 导航栏 -->
+    <div class="nav">
+      <li><a href="#">网站首页</a></li>
+      <li><a href="#">网站首页</a></li>
+      <li><a href="#">网站首页</a></li>
+      <li><a href="#">网站首页</a></li>
+      <li><a href="#">网站首页</a></li>
+      <li><a href="#">网站首页</a></li>
+    </div>
+  </body>
+</html>

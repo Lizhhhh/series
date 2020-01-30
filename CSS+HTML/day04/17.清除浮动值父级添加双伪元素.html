@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Document</title>
+    <style>
+      .clearfix:before,
+      .clearfix:after {
+        content: '';
+        display: table;
+      }
+      .clearfix:after {
+        clear: both;
+      }
+      .clearfix {
+        *zoom: 1;
+      }
+      /* one 是父级,很多情况下,不方便给高度 */
+      .one {
+        width: 500px;
+        border: 1px solid red;
+      }
+      .damao {
+        width: 200px;
+        height: 200px;
+        background-color: purple;
+        float: left;
+      }
+      .ermao {
+        width: 250px;
+        height: 250px;
+        background-color: skyblue;
+        float: left;
+      }
+      .two {
+        width: 700px;
+        height: 150px;
+        background-color: #000;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="one clearfix">
+      <div class="damao"></div>
+      <div class="ermao"></div>
+    </div>
+    <div class="two"></div>
+  </body>
+</html>

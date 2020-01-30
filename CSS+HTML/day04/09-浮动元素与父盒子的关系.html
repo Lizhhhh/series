@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>浮动元素与父盒子的关系</title>
+    <style>
+      .father {
+        width: 500px;
+        height: 500px;
+        background-color: pink;
+        border: 20px solid red;
+        padding: 20px;
+      }
+      .son {
+        width: 200px;
+        height: 200px;
+        background-color: purple;
+        float: right;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="father">
+      <div class="son"></div>
+    </div>
+  </body>
+</html>
