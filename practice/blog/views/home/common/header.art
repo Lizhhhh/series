@@ -1,0 +1,14 @@
+<div class="header">
+  <div class="w1100">
+    <!-- logo -->
+    <h1 class="logo h1">
+      <a href="#">
+        <img src="/home/images/logo.png" alt="logo.png" />
+      </a>
+    </h1>
+    <ul class="navigation fr">
+      <li><a href="/home/" class="active">首页</a></li>
+      <li><a href="/admin/login">登录</a></li>
+    </ul>
+  </div>
+</div>

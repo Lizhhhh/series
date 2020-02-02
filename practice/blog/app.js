@@ -4,12 +4,12 @@ const morgan = require('morgan')
 const app = express()
 
 
-if (process.env.NODE_ENV === 'development') {
-  console.log('当前环境是开发环境')
-  app.use(morgan('dev'))
-} else {
-  console.log('当前环境是生产环境')
-}
+// if (process.env.NODE_ENV === 'development') {
+//   console.log('当前环境是开发环境')
+//   app.use(morgan('dev'))
+// } else {
+//   console.log('当前环境是生产环境')
+// }
 
 // 连接数据库
 require('./model/connect')

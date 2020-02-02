@@ -1,0 +1,71 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+
+
+.clearfix:before,
+.clearfix:after {
+  content: "";
+  display: table;
+}
+
+.clearfix:after {
+  clear: both;
+}
+
+.clearfix {
+  *zoom: 1;
+}
+
+body {
+  background-color: #f3f5f7
+}
+
+.w1100 {
+  width: 1100px;
+  margin: auto;
+}
+
+.fr {
+  float: right;
+}
+
+.fl {
+  float: left;
+}
+
+li {
+  list-style: none;
+}
+
+a {
+  text-decoration: none;
+}
+
+.active {
+  color: red;
+}
+
+.header {
+  height: 80px;
+  line-height: 80px;
+}
+
+
+h1.logo {
+  float: left;
+  height: 65px;
+}
+
+
+.logo a {
+  display: inline-block;
+  margin-top: 15px;
+  height: 65px;
+}
+
+.navigation li {
+  float: left;
+  margin-left: 20px;
+}

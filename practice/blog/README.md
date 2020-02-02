@@ -994,6 +994,7 @@ if(process.env.NODE_ENV === 'development') {
 3.在config文件夹下新建default.json、development.json、production.json文件
 4.在项目中通过require方法,将模块进行导入
 5.使用模块内部提供的get方法获取配置信息
+
 ```js
 const config = require('config');
 console.log(config.get('title'));
@@ -1004,3 +1005,133 @@ console.log(config.get('title'));
 1.在config文件夹中建立custom-environment-variables.json文件
 2.配置项属性的值填写系统环境变量的名字
 3.项目运行时config模块查找系统环境变量,并读取其值作为当前配置项属于的值
+
+
+
+# 4. 项目小结
+
+## 4.1 抽离骨架
+
+- `layout.art`
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="/home/css/base.css" />
+    {{block "link"}}{{/block}}
+  </head>
+  <body>
+    {{block "main"}} {{/block}}
+  </body>
+</html>
+```
+
+- 使用骨架
+
+```html
+{{extend './common/layout.art'}}
+{{block 'link'}}
+	<link rel="stylesheet" href="/home/css/index.css">
+{{/block}}
+{{block 'main'}}
+	<div class="header"></div>
+{{/block}}
+```
+
+
+
+## 4.2 抽离公共部分
+
+- 抽离公共的头部到: `header.art`
+
+```css
+<div class="header">
+  <div class="w1100">
+    <!-- logo -->
+    <h1 class="logo h1">
+      <a href="#">
+        <img src="images/logo.png" alt="logo.png" />
+      </a>
+    </h1>
+    <ul class="navigation fr">
+      <li><a href="#" class="active">首页</a></li>
+      <li><a href="#">登录</a></li>
+    </ul>
+  </div>
+</div>
+```
+
+- 使用头部
+
+```html
+{{include './common/header.art'}}
+```
+
+注: 4.1 和 4.2 都使用到了art-template语法,在express中的配置如下(`app.js`):
+
+```js
+const express = require('express');
+const path = require('path');
+const app = express();
+// 在express中使用 art-template模板引擎
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'art');
+app.engine('art', require('express-art-template'))
+```
+
+## 4.3 mongoose中的联合查询
+
+```js
+const mongoose = require('mongoose');
+// 先建立关联
+const userSchema = new mongoose.Shcema({})
+const articleSchema = new mongoose.Schema({
+  title:{
+    type: String,
+    minlength: 4,
+    maxlength: 20,
+    required:[true, "请填写文章标题"]
+  },
+  author:{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: [true, "请传递作者"]
+  }
+})
+const User = mongoose.model('User', userSchema);
+const Article = mongoose.model('Article', articleSchema);
+// 再联合查询
+const run = async()=>{
+  const articles = await Article.find().populate('author')
+  console.log(articles)
+}
+run()
+
+```
+
+## 4.4 mongoose中使用分页
+
+```js
+const pagination = require('mongoose-sex-page');
+const Article = require('../model/article');
+
+const run = async () => {
+    let result = await pagination(Article).page(1).size(4).display(5).find().exec()
+}
+```
+
+## 4.5 在express中配置接收post参数
+
+```js
+const express = require('express');
+const app = express();
+const bodyParser = require('body-parser');
+app.use(bodyParser.urlencoded({extends: false}))
+```
+
+
+
+
+

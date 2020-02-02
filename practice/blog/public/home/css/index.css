@@ -1,0 +1,30 @@
+ul.list{
+
+}
+
+ul.list li {
+  width: 520px;
+  height: 520px;
+  text-align: center;
+  list-style: none;
+  padding: 15px;
+}
+
+
+ul.list a img {
+  width: 400px;
+  height: 400px;
+}
+
+
+.brief {
+  font-size: 12px;
+  color:#0c0c0c;
+}
+
+.page {
+  text-align: center;
+  font-size: 25px;
+  height: 80px;
+  padding-top: 15px;
+}
