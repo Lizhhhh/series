@@ -1268,7 +1268,7 @@ Ajax只能向自己的服务器发送请求.
 
 ## 4.4 使用JSONP解决同源限制问题
 
-jsonp是json with padding的缩写,它不属于Ajax请求,但它可以模拟Ajax请求。
+jsonp是json with padding(将JSON数据作为填充内容)的缩写,它不属于Ajax请求,但它可以模拟Ajax请求。
 
 1.将不同源的服务端请求地址写在script标签的src属性中
 
@@ -1295,5 +1295,149 @@ function fn(data) {}
 function fn(data) {console.log(data)};
 ```
 
+- [栗子] - JSONP的实现
 
+1.在S2服务器中添加如下代码:
+
+```js
+app.get('/jsonp',(req,res)=>{
+    const data = `fn({name:'Marron', age:18, remarks:'JSONP测试'})`;
+    res.send(data)
+})
+```
+
+2.先定义一个全局函数,在使用script标签加载S2服务器的资源
+
+```html
+<script>
+    // 假设服务器返回的数据存储在data中
+    function fn(data) {
+        console.log(data);
+	}
+</script>
+<!-- 使用jsonp加载资源 -->
+<script src="http://localhost:3001/jsonp"></script>
+```
+
+<font color=red>核心</font>:利用了script标签可以向非同源端的服务器发送请求的特性,加载完毕后,相当于把服务器返回的内容当作JavaScript代码执行
+
+## 4.5 JSON 代码优化
+
+1.客户端将函数名称传递到服务器端
+
+```html
+<script src="http://localhost:3001/jsonp?cb=fn"></script>
+```
+
+2.将script请求的发送变成动态请求
+
+```html
+<script>
+    var srcipt = document.creatElement('script');
+    script.src="http://localhost:3001/jsonp?cb=fn"
+    document.body.appendChild(script);
+</script>
+```
+
+3.发送请求后,删除掉script标签
+
+```html
+<script>
+    var srcript = document.createElement('script');
+    script.src="http://localhost:3001/jsonp?cb=fn";
+    document.body.appendChild(script);
+    script.onload = function (){
+        document.body.removeChild(script)
+    } 
+</script>
+```
+
+4.封装jsonp
+
+```js
+function jsonp(url) {
+  var script = document.createElement('script')
+  script.src = url
+  document.body.appendChild(script)
+  script.onload = function() {
+    document.body.removeChild(script)
+  }
+}
+```
+
+### 4.5.1 将回调函数封装进的JSONP
+
+由于上面封装的JSONP它调用的函数和JSONP函数是分离的,破坏了JSONP的封装性,下面尝试将JSONP的回调函数封装如JSONP中,请求参数如下:
+
+```js
+jsonp({
+    url: 'http://localhost:3001/better?cb=fn',
+    success: function(){}
+})
+```
+
+产生了如下2个问题:
+
+- 回调函数不再是一个全局变量,即当使用script标签加载完毕只会,找不到回调函数
+- success是一个匿名函数,传递到后端是没有名称(如 fn)传递
+
+```js
+// 将回调函数挂在到全局对象上
+function jsonp(options) {
+    var script = document.createElement('script');
+    window.fn = options.success;
+    script.src = options.url + '?cb=fn';
+    document.body.appendChild(script)
+    script.onload = function(){
+        document.body.removeChild(script);
+        window.fn = null;
+    }
+}
+```
+
+以上代码,当服务器端的返回的数据很慢时,如果连续发送多个不同的JSONP请求时,会导致多个请求的回调函数是同一个.
+
+解决办法是,每次调用回调函数时,名字不能相同(即随机产生一个名字)
+
+```js
+// 每次随机产生一个名字
+function jsonp(options) {
+  var script = document.createElement('script')
+  var fn = 'fn'+ Math.random().toString().replace('.','')
+  window[fn] = options.success
+  script.src = options.url + '?cb=' + fn
+  document.body.appendChild(script)
+  script.onload = function() {
+    document.body.removeChild(script)
+    // 用完后释放内存
+    delete window[fn]
+  }
+}
+```
+
+### 4.5.2 将参数封装进jsonp
+
+```js
+function jsonp(options) {
+  var script = document.createElement('script')
+  var fn =
+    'fn' +
+    Math.random()
+      .toString()
+      .replace('.', '')
+  window[fn] = options.success
+  var params = []
+  params.push('cb=' + fn)
+  for (let attr in options.data) {
+    params.push(attr + '=' + options.data[attr])
+  }
+  params = params.join('&')
+  script.src = options.url + '?' + params
+  document.body.appendChild(script)
+  script.onload = function() {
+    document.body.removeChild(script)
+    delete window[fn]
+  }
+}
+```
 
