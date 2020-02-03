@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Document</title>
+    <link
+      rel="stylesheet"
+      href="/assets/bootstrap/dist/css/bootstrap.min.css"
+    />
+    <style type="text/css">
+      .container {
+        padding-top: 60px;
+      }
+      .padding {
+        padding: 5px 0 20px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="form-group">
+        <label>请选择文件</label>
+        <input type="file" id="file" />
+        <br />
+        <div class="progress">
+          <div class="progress-bar" style="width: 0%;" id="bar">0%</div>
+        </div>
+      </div>
+    </div>
+    <script type="text/javascript">
+      var file = document.getElementById('file')
+      // 获取进度条元素
+      var bar = document.getElementById('bar')
+      // 为文件选择控件添加onchanges事件
+      // 在用户选择文件时触发
+      file.onchange = function() {
+        // 创建空的表单对象
+        var formData = new FormData()
+        formData.append('attrName', this.files[0])
+        var xhr = new XMLHttpRequest()
+        xhr.open('post', 'http://localhost:3000/upload')
+        // 在文件上传的过程中持续触发
+        xhr.upload.onprogress = function(ev) {
+          var result = (ev.loaded / ev.total) * 100 + '%'
+          bar.style.width = result
+          bar.innerHTML = result
+        }
+        // 发送ajax请求
+        xhr.send(formData)
+        xhr.onload = function() {
+          // 请求成功
+          if (xhr.status == 200) {
+            // 将服务器端返回的数据显示在控制台中
+            console.log(xhr.responseText)
+          }
+        }
+      }
+    </script>
+  </body>
+</html>
