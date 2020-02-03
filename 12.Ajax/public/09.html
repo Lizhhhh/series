@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      var xhr = new XMLHttpRequest()
+      xhr.open('get', 'http://localhost:3000/first')
+      xhr.send()
+      xhr.onload = function() {
+        console.log(2)
+        console.log(xhr.responseText);
+      }
+      console.log(1)
+    </script>
+  </body>
+</html>

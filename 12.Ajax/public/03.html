@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Document</title>
+  </head>
+  <!-- <body>
+    <p>
+      <input type="text" name="" id="username" />
+    </p>
+    <p>
+      <input type="text" name="" id="age" />
+    </p>
+    <p>
+      <input type="button" value="提交" id="btn" />
+    </p>
+    <script>
+      var btn = document.getElementById('btn')
+      // 获取姓名文本框
+      var username = document.getElementById('username')
+      // 获取年龄文本框
+      var age = document.getElementById('age')
+      btn.onclick = function() {
+        // 创建ajax对象
+        var xhr = new XMLHttpRequest()
+
+        // 获取用户在文本框中输入的值
+        var nameValue = username.value
+        var ageValue = age.value
+
+        var params = 'username=' + nameValue + '&age=' + ageValue
+
+        // 配置ajax对象
+        xhr.open('get', 'http://localhost:3000/get?' + params)
+        // 发送请求
+        xhr.send()
+        // 获取服务器端响应的数据
+        xhr.onload = function() {
+          console.log(xhr.responseText)
+        }
+      }
+    </script>
+  </body> -->
+  <body>
+    <p>姓名: <input type="text" id="name" /></p>
+    <p>年龄: <input type="text" id="age" /></p>
+    <p>
+      <input type="button" value="提交" id="btn"/>
+    </p>
+    <script>
+      var $name = document.getElementById('name')
+      var $age = document.getElementById('age')
+      var $btn = document.getElementById('btn')
+      $btn.onclick = function() {
+        var xhr = new XMLHttpRequest()
+        var params = 'name=' + $name.value + '&age=' + $age.value
+        xhr.open('get', 'http://localhost:3000/get?' + params)
+        xhr.send()
+        xhr.onload = function() {
+          console.log(xhr.responseText)
+        }
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,10 @@
+01.html - Ajax入门
+02.html - 处理服务器端返回的JSON数据
+03.html - ajax传递get请求参数
+04.html - ajax传递post请求
+05.html - 向服务器端传递JSON格式的请求参数
+06.html - 获取服务器端响应数据的另一种方式(ajax状态码)
+07.html - ajax错误处理
+08.html - ajax缓存
+09.html - ajax异步请求
+10.html - ajax函数封装

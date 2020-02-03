@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Document</title>
+  </head>
+  <body>
+    <p>姓名: <input type="text" id="name" /></p>
+    <p>年龄: <input type="text" id="age" /></p>
+    <p>
+      <input type="button" value="提交" id="btn" />
+    </p>
+    <script>
+      var $name = document.getElementById('name')
+      var $age = document.getElementById('age')
+      var $btn = document.getElementById('btn')
+      $btn.onclick = function() {
+        var xhr = new XMLHttpRequest()
+        var params = 'name=' + $name.value + '&age=' + $age.value
+        xhr.open('post', 'http://localhost:3000/post')
+        // 设置请求参数格式的类型(post请求必须设置)
+        xhr.setRequestHeader(
+          'Content-Type',
+          'application/x-www-form-urlencoded'
+        )
+        xhr.send(params)
+        xhr.onload = function() {
+          console.log(xhr.responseText)
+        }
+      }
+    </script>
+  </body>
+</html>

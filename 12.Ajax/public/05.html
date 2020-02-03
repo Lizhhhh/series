@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      // 1. 创建Ajax对象
+      var xhr = new XMLHttpRequest()
+      // 2. 告诉Ajax以什么方式、像哪儿发送请求
+      //  请求地址是服务器端的路由地址
+      xhr.open('post','http://localhost:3000/json')
+      // 3. 发送请求
+
+      // 通过请求头,告诉服务器端,客户端向服务器端传递的请求参参数的格式是什么
+      xhr.setRequestHeader('Content-Type','application/json');
+
+      xhr.send(JSON.stringify({name: 'lisi', age: 50}));
+      // 4. 获取服务器端相应到客户端的数据
+      xhr.onload = function() {
+        // xhr.responseText属性中保存的是服务器端返回给客户端的文件
+        console.log(xhr.responseText);
+      }
+    </script>
+  </body>
+</html>

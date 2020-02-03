@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Document</title>
+  </head>
+  <body>
+    <button id="btn">发送ajax请求</button>
+    <script>
+      var $btn = document.getElementById('btn')
+      $btn.onclick = function() {
+        var xhr = new XMLHttpRequest()
+        xhr.open('get', 'http://localhost:3000/error')
+        xhr.send()
+        xhr.onload = function() {
+          // 获取服务器端的http状态码
+          if (xhr.status == 400) {
+            alert('请求出错')
+          }
+          console.log(xhr.responseText)
+        }
+        // 网络中断时,会触发onerror事件
+        xhr.onerror = function() {
+          alert('网络中断,无法发送ajax请求')
+        }
+      }
+    </script>
+  </body>
+</html>
