@@ -5,3 +5,6 @@
 05.html - 将回调函数封装进jsonp
 06.html - 将get请求参数封装进jsonp
 07.html - 使用jsonp获取天气信息
+08.html - 跨域资源共享
+09.html - 访问非同源数据的服务器端解决方案
+10.html - 实现跨域登录功能

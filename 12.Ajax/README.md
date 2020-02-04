@@ -282,7 +282,7 @@ app.post('/json', (req, res)=>{
   - `0 - 请求未初始化`: 创建 xhr 对象, 未使用xhr.open 方法
   - `1 - 请求已经建立`:  使用xhr.open方法, 未使用 xhr.send 方法
   - `2 - 请求发出`:  调用了xhr.send方法,但是请求还未得到回复
-  - `3 - 请求正在处理`: 响应中已经有部分数据可以用了 
+  - `3 - 请求正在处理`: 响应中已经有部分数据可以用了
   - `4 -响应已经完成`: 可以获取并使用服务器中的相应
 
 - 获取ajax状态码:
@@ -513,7 +513,7 @@ xhr.onload = function () {
 
 2. 准备art-template模板
 
-- `type="text/html"`: 是为了在编辑器中有高亮显示 
+- `type="text/html"`: 是为了在编辑器中有高亮显示
 
 ```html
 <script id="tpl" type="text/html">
@@ -866,7 +866,7 @@ $input.oninput = function () {
         // 清空县城
         var html = template('areaTpl', {data: []});
         area.innerHTML = html;
-        
+
         // 发送ajax请求,获取信息
         ajax({
             type: 'get',
@@ -1194,7 +1194,7 @@ file.onchange = function() {
 </div>
 ```
 
-- [栗子] - 上传的代码
+- [栗子] - 上传的代码(前端)
 
 ```html
 <script>
@@ -1225,7 +1225,7 @@ file.onchange = function() {
 </script>
 ```
 
-- [栗子] - 上传的代码,服务端
+- [栗子] - 上传的代码(服务端)
 
 ```js
 // 服务端使用formidable解析参数
@@ -1286,7 +1286,7 @@ app.post('/uploads', (req, res)=>{
                 }
             }
         }
-	}	
+	}
 </script>
 ```
 
@@ -1390,7 +1390,7 @@ app.get('/jsonp',(req,res)=>{
     document.body.appendChild(script);
     script.onload = function (){
         document.body.removeChild(script)
-    } 
+    }
 </script>
 ```
 
@@ -1457,7 +1457,7 @@ function jsonp(options) {
 }
 ```
 
-### 4.5.2 将参数封装进jsonp
+### 4.5.2 将get请求参数封装进jsonp
 
 ```js
 function jsonp(options) {
@@ -1486,4 +1486,123 @@ function jsonp(options) {
 ## 4.6 CORS跨域资源共享
 
 CORS: 全称为 Cross-origin resource sharing,即跨域资源共享,它允许浏览器向跨域服务器发送Ajax请求,克服了Ajax只能同源使用的限制
+
+1.客户端向服务端发送请求时,会带一个origin的请求头部
+
+```js
+origin: http://localhost:3000
+```
+
+2.服务端会返回一个Access-Control-Access-Origin的响应头部
+
+```js
+Access-Control-Access-Origin: '*'
+```
+
+### 4.6.1 响应头部设置
+
+- 允许所有客户端(域名)访问
+
+```js
+res.header('Access-Control-Allow-Origin', '*');
+```
+
+- 设置允许访问的方法
+
+```js
+res.header('Access-Control-Allow-Methods', 'get,post')
+```
+
+### 4.6.2 封装CORS
+
+使用中间件,将允许访问的头部设置放在所有路由前
+
+```js
+app.use((req, res, next)=>{
+    res.setHeader('Access-Control-Allow-Orgin': '*');
+    res.setHeader('Access-Control-Allow-Method': 'get,post');
+    next();
+})
+```
+
+## 4.7 访问非同源数据,服务器端解决方案
+
+- 同源政策是浏览器给予Ajax技术的限制,服务器端是不存在同源政策限制.
+
+- 可以使用自己客户端的服务器,去访问要访问数据的服务器去获取数据,然后再将数据传给前端.
+
+### 4.7.1 使用Ajax技术,获取自己网站的服务器
+
+思路:
+
+- 点击按钮.发送Ajax请求,获取同源服务端的数据
+
+```html
+<body>
+    <button id="btn">点我发送请求</button>
+    <script>
+        var btn = document.getElementById('btn')
+       	btn.onclick = function () {
+            var xhr = new XMLHttpRequest();
+            xhr.open('get','http://localhost:3000/server')
+            xher.send();
+            xhr.onload = function(){
+                if(xhr.status == 200) {
+                    console.log(xhr.responseText)
+                }
+            }
+        }
+    </script>
+</body>
+```
+
+### 4.7.2 后端访问另一个端口的后端
+
+- 使用第三方模块`request`: `npm i request`
+- 基本使用如下
+
+```js
+const request = require('request');
+request('http://www.google.com', function(error, response, body){
+	console.log('error', error);
+    console.log('statusCode', response && response.statusCode);
+    console.log('body', body)
+})
+```
+
+
+
+## 4.8 cookie复习
+
+1.客户端可以对服务器端发出请求
+
+2.服务器端可以对客户端做出响应
+
+3.客户端和服务器端进行沟通的时候,需要遵循HTTP协议中的规则
+
+4.在HTTP协议当中: 客户端和服务器的沟通是(无状态的)
+
+5.所谓无状态: 服务端不关心客户端是什么,只关心请求的路由,一旦监听到对应的路由,就调用对应的路由处理函数,一旦处理结束,这次沟通也就结束
+
+<font color=red>cookie:</font>用来实现 客户端/服务端 身份识别的一种技术.
+
+## 4.9 withCredentials属性
+
+- 在使用Ajax技术发送跨域请求时,默认情况下不会再请求中携带cookie信息
+
+- withCredentials: 指定在涉及跨域请求时,是否携带cookie信息,默认值为false
+
+```js
+xhr.withCredentials = true;
+```
+
+- 在服务器端,还必须设置允许客户端发送请求时携带cookie: `Access-Control-Allow-Credentials: true`
+
+```js
+res.header('Access-Control-Allow-Credentials',true);
+```
+
+
+
+
 

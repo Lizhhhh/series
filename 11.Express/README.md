@@ -303,5 +303,12 @@ app.locals.users = [{
 }]
 ```
 
+## 4.3 设置session
+
+```js
+const session = require('express-session');
+app.use(session({secret: 'marron'}))
+```
+
 
 

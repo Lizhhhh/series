@@ -69,11 +69,15 @@
         },
         success: function(data) {
           if (data.status == 200 && data.message) {
+            console.log(data);
             var html = template('tpl', { info: data.data.forecast_1h })
             box.innerHTML = html
           }
         }
       })
+
+
     </script>
   </body>
 </html>
+

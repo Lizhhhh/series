@@ -5,7 +5,9 @@
   "main": "app.js",
   "dependencies": {
     "express": "^4.17.1",
-    "formidable": "^1.2.1"
+    "express-session": "^1.17.0",
+    "formidable": "^1.2.1",
+    "request": "^2.88.0"
   },
   "devDependencies": {},
   "scripts": {
