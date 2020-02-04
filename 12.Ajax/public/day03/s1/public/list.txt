@@ -4,3 +4,4 @@
 04.html - 封装jsonp
 05.html - 将回调函数封装进jsonp
 06.html - 将get请求参数封装进jsonp
+07.html - 使用jsonp获取天气信息

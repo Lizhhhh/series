@@ -965,6 +965,48 @@ $input.oninput = function () {
 }]
 ```
 
+## 2.4 腾讯天气
+
+- 请求地址:
+  - http://wis.qq.com/weather/common
+- 请求方式
+  - get支持jsonp
+- 参数
+
+| 参数名       | 必选 | 类型   | 说明                                            |
+| ------------ | ---- | ------ | ----------------------------------------------- |
+| source       | 是   | string | pc、xw                                          |
+| weather_type | 是   | string | forecast_1h 未来48小时<br/>forecast_24h 未来7天 |
+| province     | 是   | string | 省份                                            |
+| city         | 是   | string | 城市                                            |
+
+- 返回值
+
+```js
+{
+    "data":{
+        // 逐时天气(48小时)
+        "forecast_1h": {
+            '0': {
+                "degree": "7",	// 温度
+           		"update_time": "20190304130000",	//时间
+                "weather": "晴",		// 天气名称
+                "weather_code": "00",		// 天气码
+                "weather_short": "晴",	// 天气简要名称
+                "wind_direction": "南风",	// 风向
+                "wind_power": "3" // 风力级别
+            }
+        }
+    },
+    "message": "OK",
+    "status": 200
+}
+```
+
+
+
+
+
 
 
 # 3. FormData
@@ -1440,4 +1482,8 @@ function jsonp(options) {
   }
 }
 ```
+
+## 4.6 CORS跨域资源共享
+
+CORS: 全称为 Cross-origin resource sharing,即跨域资源共享,它允许浏览器向跨域服务器发送Ajax请求,克服了Ajax只能同源使用的限制
 
