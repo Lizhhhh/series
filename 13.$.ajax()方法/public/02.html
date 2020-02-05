@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Document</title>
+  </head>
+  <body>
+    <button id="btn">发送请求</button>
+    <script src="/js/jquery.min.js"></script>
+    <script>
+      var params = {
+        name: 'wangwu',
+        age: 19
+      }
+      $('#btn').on('click', function() {
+        $.ajax({
+          type: 'post',
+          url: '/user',
+          data: params,
+          // "Content-Type" 指定参数的格式类型,默认值是 "application/x-www-form-urlencoded"
+          // contentType: 'application/json',
+          success: function(response) {
+            console.log(response)
+          }
+        })
+      })
+    </script>
+  </body>
+</html>

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>serialize方法说明</title>
+  </head>
+  <body>
+    <form id="form">
+      <input type="text" name="username" />
+      <input type="password" name="password" />
+      <input type="submit" value="提交" />
+    </form>
+    <script src="/js/jquery.min.js"></script>
+    <script type="text/javascript">
+      $('#form').on('submit', function() {
+        // var params = $('#form').serialize()
+        serializeObject($(this))
+        return false
+      })
+
+      function serializeObject(obj) {
+        var result = {}
+        // [{name:'username', value:'用户输入的内容'},{name:'password',value:'123456'}]
+        var params = obj.serializeArray();
+        $.each(params, function(index, value){
+          result[value.name] = value.value;
+        })
+        return result
+      }
+    </script>
+  </body>
+</html>

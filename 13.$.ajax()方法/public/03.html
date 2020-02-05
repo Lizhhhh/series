@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Document</title>
+  </head>
+  <body>
+    <button id="btn">发送请求</button>
+    <script src="/js/jquery.min.js"></script>
+    <script>
+      var params = {
+        name: 'wangwu',
+        age: 19
+      }
+      $('#btn').on('click', function() {
+        $.ajax({
+          type: 'post',
+          url: '/user',
+          beforeSend: function() {
+            alert('请求即将发送');
+
+            // 请求不会被发送
+            return false;
+          },
+          success: function(response) {
+            console.log(response)
+          }
+        })
+      })
+    </script>
+  </body>
+</html>
