@@ -4,3 +4,5 @@
 04.html - serialize方法说明
 05.html - $.ajax方法发送jsonp请求
 06.html - $.get、$.post方法的使用
+07.html - RESTful风格API
+08.html - xml介绍
