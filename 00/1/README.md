@@ -84,7 +84,7 @@ img {
 
 - 算法如下:
 
-1. 首先获取浏览器的宽度w,用w除以200向下取整记为列数: col
+1. 首先获取浏览器的宽度w,用w除以图片盒子的宽度向下取整记为列数: col
 2. 利用数组,保存每一列当前的高度
 3. 如果是第一行,则将图片的高度保存在数组arr中
 4. 如果不是第一行,取出arr中的最小值和索引,计算出绝对定位的位置.并给图片设置绝对定位
@@ -100,7 +100,7 @@ img {
 var screenWidth = $(window).outerWidth()
 ```
 
-##### 2.1.2 给DOM元素加css样式
+### 2.1.2 给DOM元素加css样式
 
 ```js
 $().css({
@@ -159,9 +159,184 @@ function waterFall() {
 }
 ```
 
+# 3. 防抖与节流
+
+##  3.1 防抖
+
+- `防抖`: 触发事件后,在n秒内函数只执行一次
+
+- 记忆: 你手比较抖,不小心按了按钮2下...你只希望它只执行一次.且按第二次结束时间算..这就用到了防抖技术
+
+  
+
+## 3.2 节流
+
+- `节流`: 连续发生的事件,在n秒内只执行一次函数
+- 记忆: 
+
+## 3.3 防抖与节流的区别
+
+- 在一段时间内,不管触发多少次事件,事件处理函数都只处理一次称之为节流
+- 防抖,是在最后一次事件发生时开始计算,到固定时间触发
+
+## 3.4 准备工作
+
+- 准备一个给定宽、高的盒子,初始化显示为0.(innerHTML = 0)
+- 当鼠标移入盒子的时候,触发鼠标移动事件(box.onmousemove)
+- 鼠标移动事件的处理函数: 当鼠标在盒子中移动的时候,会将一个全局变量(count)加1并写入盒子中
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>防抖与节流</title>
+    <style>
+      .box {
+        width: 150px;
+        height: 150px;
+        margin: 50px auto;
+        line-height: 150px;
+        text-align: center;
+        border: 1px solid black;
+        font-size: 50px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="box" class="box">0</div>
+    <script>
+      var box = document.getElementById('box')
+      var count = 1
+      box.onmousemove = function() {
+        box.innerHTML = count++
+      }
+    </script>
+  </body>
+</html>
+```
+
+## 3.5 防抖的实现(先等待在执行)
+
+- 思路: 
+  1. 在事件处理器中放一个延迟执行函数(setTimeout)
+  2. 每触发一次,清除上一次的事件处理函数(clearTimout)
+
+```js
+var box = document.getElementById('box')
+var count = 1
+var timer = null;
+function debounce() {
+  if (timer) clearTimeout(timer)
+  timer = setTimeout(() => {
+    box.innerHTML = count++;
+  }, 1 * 1000);
+}
+box.onmousemove = debounce
+```
+
+### 3.5.1 防抖的改进
+
+- 上面的等待时间和处理函数是静态的,封装成动态的
+
+```js
+var debounce = (handUp, fn) {
+    var timer = null;
+    return function (){
+        if(timer) clearTimeout(timer);
+        timer = setTimeOut(function(){
+            fn.call(this, arguments)
+        }, handUp)
+    }
+}
+box.onmousemove = debounce(1000, function(){
+    box.innerHTML = count++;
+})
+```
 
 
 
+## 3.6 防抖的实现(先执行在等待)
+
+- 描述: 触发事件处理函数的时候,先执行一次函数,然后过n秒后再执行
+- 思路:
+
+1. 由于核心是异步函数(setTimeout)的清除.
+2. 用一个flag函数记录当前定时器的状态,如果定时器为空则代表执行
+
+```js
+function debounce(handUp, fn) {
+  // 进来的时候设置为null
+  var timer = null
+  return function() {
+    if (timer) clearTimeout(timer)
+    var flag = !timer
+    timer = setTimeout(() => {
+      timer = null
+    }, handUp)
+    if (flag) fn.apply(this, arguments)
+  }
+}
+```
+
+## 3.7 节流的实现(先执行一次,后每隔一段时间执行一次)
+
+- 描述: 在给定时间内,无论时间处理函数触发多少次都只执行一次
+- 思路:
+
+1.根据timer是否为空,如果为空则执行一次.
+
+2.在给定时间后,将定时器的序号timer清空.让它可以重新执行
+
+```js
+function throttle(handUp, cb){
+    var timer = null;
+    return function(){
+        if(!timer){
+            cb.apply(this);
+            timer = setTimeout(()=>{
+                timer = null;
+            }, handUp)
+        }
+    }
+}
+```
+
+## 3.8 节流的实现(先不执行,后每隔一段时间执行一次)
+
+- 思路很简单,就是将cb函数放在定时器内部
+
+```js
+function throttle(handUp, cb){
+    var timer = null;
+    return function(){
+        if(!timer){
+            timer = setTimeout(()=>{
+                cb.apply(this);
+                timer = null;
+            }, handUp)
+        }
+    }
+}
+```
+
+## 3.9 节流的实现(不使用定时器)
+
+- 触发的第一次的时候,先记录第一次执行的时间(last)
+- 触发然后随着函数不断触发,得到第一个时间间隔大于给定时间的环境.
+- 触发给定的函数,然后将last设置为当前时间
+
+```js
+function throttle(handUp, cb){
+    var last = Date.now();
+    return function(){
+        var now = Date.now();
+        if(now - last > handUp){
+            last = now;
+            cb.apply(this);
+        }
+    }
+}
+```
 
 
 

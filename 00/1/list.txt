@@ -3,3 +3,4 @@
 3.js - 箭头函数
 4.js - set、map
 5.html - 瀑布流
+6.html - 防抖与节流

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>防抖与节流</title>
+    <style>
+      .box {
+        width: 150px;
+        height: 150px;
+        margin: 50px auto;
+        line-height: 150px;
+        text-align: center;
+        border: 1px solid black;
+        font-size: 50px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="box" class="box">0</div>
+    <script>
+      var box = document.getElementById('box')
+      var count = 1
+
+      // // 防抖1 - 先等待在执行
+      // function debounce(handUp, fn) {
+      //   var timer = null
+      //   return function() {
+      //     if (timer) clearTimeout(timer)
+      //     timer = setTimeout(function() {
+      //       fn.call(this, arguments)
+      //     }, handUp)
+      //   }
+      // }
+
+      // // 防抖2 - 先执行在等待
+      // function debounce(handUp, fn) {
+      //   // 进来的时候设置为null
+      //   var timer = null
+      //   return function() {
+      //     if (timer) clearTimeout(timer)
+      //     var flag = !timer
+      //     timer = setTimeout(() => {
+      //       timer = null
+      //     }, handUp)
+      //     if (flag) fn.apply(this, arguments)
+      //   }
+      // }
+
+      // // 节流: 先执行一次,后每隔一段时间执行一次
+      // function throttle(handUp, cb) {
+      //   var timer = null
+      //   return function() {
+      //     if (!timer) {
+      //       cb.apply(this)
+      //       timer = setTimeout(() => {
+      //         timer = null
+      //       }, handUp)
+      //     }
+      //   }
+      // }
+
+      // // 节流: 先不执行,后每隔一段时间执行一次
+      // function throttle(handUp, cb) {
+      //   var timer = null
+      //   return function() {
+      //     if (!timer) {
+      //       timer = setTimeout(() => {
+      //         cb.apply(this)
+      //         timer = null
+      //       }, handUp)
+      //     }
+      //   }
+      // }
+
+      // 节流: 不使用定时器函数
+      function throttle(handUp, cb) {
+        var last = Date.now()
+        return function() {
+          var now = Date.now()
+          if (now - last > handUp) {
+            last = now
+            cb.apply(this)
+          }
+        }
+      }
+
+      box.onmousemove = throttle(2000, function() {
+        box.innerHTML = count++
+      })
+    </script>
+  </body>
+</html>
