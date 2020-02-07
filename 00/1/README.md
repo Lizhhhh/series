@@ -172,7 +172,6 @@ function waterFall() {
 ## 3.2 节流
 
 - `节流`: 连续发生的事件,在n秒内只执行一次函数
-- 记忆: 
 
 ## 3.3 防抖与节流的区别
 
@@ -278,7 +277,7 @@ function debounce(handUp, fn) {
 }
 ```
 
-## 3.7 节流的实现(先执行一次,后每隔一段时间执行一次)
+## 3.7 节流的实现
 
 - 描述: 在给定时间内,无论时间处理函数触发多少次都只执行一次
 - 思路:
@@ -286,24 +285,6 @@ function debounce(handUp, fn) {
 1.根据timer是否为空,如果为空则执行一次.
 
 2.在给定时间后,将定时器的序号timer清空.让它可以重新执行
-
-```js
-function throttle(handUp, cb){
-    var timer = null;
-    return function(){
-        if(!timer){
-            cb.apply(this);
-            timer = setTimeout(()=>{
-                timer = null;
-            }, handUp)
-        }
-    }
-}
-```
-
-## 3.8 节流的实现(先不执行,后每隔一段时间执行一次)
-
-- 思路很简单,就是将cb函数放在定时器内部
 
 ```js
 function throttle(handUp, cb){
@@ -319,7 +300,7 @@ function throttle(handUp, cb){
 }
 ```
 
-## 3.9 节流的实现(不使用定时器)
+## 3.8 节流的实现(不使用定时器)
 
 - 触发的第一次的时候,先记录第一次执行的时间(last)
 - 触发然后随着函数不断触发,得到第一个时间间隔大于给定时间的环境.
@@ -327,7 +308,7 @@ function throttle(handUp, cb){
 
 ```js
 function throttle(handUp, cb){
-    var last = Date.now();
+    var last = 0;
     return function(){
         var now = Date.now();
         if(now - last > handUp){
@@ -337,6 +318,238 @@ function throttle(handUp, cb){
     }
 }
 ```
+
+# 4. 常见面试题
+
+## 4.1 求以下函数的输出
+
+### 4.1.1 考察点: 变量提升、this、作用域
+
+```js
+// 考察点 作用域、this、变量提升
+var a = 10
+function test() {
+  a = 100
+  console.log(a)  
+  console.log(this.a) 
+  var a
+  console.log(a) 
+}
+test()
+```
+
+- 第一个和第三个肯定是100
+- 在node环境下,没有window的概念,因此输出的是 undefined. (最后答案 100 undefined100)
+- 在浏览器环境下,在没用找到this时,会顺着作用域链找到window,而 window.a =10,因此会输出 10. (最后答案 100 10 100)
+
+[稍微改进]
+
+```js
+var a = 10;
+function test(){
+    console.log(a);
+    a = 100;
+    console.log(this.a);
+    var a;
+    console.log(a)
+}
+test();
+```
+
+- 此时根据与解析,会有如下:
+
+```js
+var a = 10;
+function test() {
+    // var a;
+    console.log(a);
+    a = 100;
+    console.log(this.a);
+    var a;
+    console.log(a)
+}
+test();
+```
+
+- 浏览器环境下因此答案为: `undefined 10 100` 
+
+### 4.1.2 考察点: 闭包的作用域
+
+```js
+(function(){
+    var a = b = 3;
+})()
+console.log(b);	// 3
+console.log(a);	// a is not defined
+```
+
+- 说明: 在非严格模式下面,出现了`var a = b = 3`,实际上是`b=3` 和 `var a = b`
+- 在执行`b=3`时,JS解释器会自动在当前的全局环境下面挂在一个b属性,值为3
+- 所以会输出`b=3`和 `a is not defined`
+
+### 4.1.3 考察点: 事件循环、单线程异步
+
+```js
+for(var i=1 ; i<=3; i++){
+    setTimeout(function(){
+        console.log(i)
+    }, 0)
+}
+```
+
+- 答案: `4 4 4 `
+- JS是单线程异步,当遇到异步函数的时候,会将异步函数添加到异步函数队列中.
+- for是同步任务,因此,优先执行了3次循环,然后再执行3次输出.此时,由于i的值是4 ,故输出 3个4
+
+[变形]:
+
+```js
+for(let i = 1; i<=3; i++){
+    setTimout(function(){
+        console.log(i);
+    }, 0);
+}
+```
+
+- 答案: `1 2 3`
+- 前面和上面一样的,但执行到输出i的时候, 由于`let` 创建的变量是块级作用域.
+- 可以看作是把i 同异步函数一起放在一个块中,放入异步函数的队列中.
+- 当时间到了从异步队列中拿出块来执行
+
+### 4.1.4 考察点: 作用域 变量提升 形参实参
+
+```js
+function fun(n){
+    console.log(n);
+    var n = 456;
+    console.log(n);
+}
+var n = 123;
+fun(n);
+```
+
+- 根据与解析,函数实际如下
+
+```js
+function fun(n){
+    // var n = n;
+    console.log(n);
+    n = 456;
+    console.log(n);
+}
+var n = 123;
+fun(n);
+```
+
+- 答案为: `123 456`
+
+
+
+[稍微改进一下]
+
+```js
+function fun(){
+    console.log(n);
+    var n = 456;
+    console.log(n);
+}
+var n = 123;
+fun(n);
+```
+
+- 答案是: `undefined 456`
+
+[再稍微改进一下]
+
+```js
+function fun(){
+    console.log(n);
+    n = 456;
+    console.log(n);
+}
+var n = 123;
+fun(n);
+```
+
+- 此时没用变量提升,答案是 `123 456`
+
+
+
+[再再稍微改进一下]
+
+```js
+function fun(){
+  console.log(fun);
+  fun = 456;
+  console.log(fun);
+}
+fun();
+var fun = 123;
+```
+
+- 考察函数的提升和变量的提升,等价于,变量提升的速度快于函数提升
+
+```js
+var fun = undefined;
+var fun = function (){
+    console.log(fun);
+    fun = 456;
+    console.log(fun);
+}
+fun();
+fun = 123;
+```
+
+- 由于函数的提升比变量的提升慢,因此,在遇到`fun()`时,会先执行`console.log(fun)`,
+- 此时会输出fun函数
+- 然后fun赋值为456,然后的console.log会输出456
+- 故输出结果为:`[Function fun] 456`
+
+[再再再稍微改进一下]
+
+```js
+function fun(){
+    console.log(fun);
+    fun = 456;
+    console.log(fun);
+}
+var fun = 123;
+fun();
+```
+
+- 根据 变量提升,改造如下:
+
+```js
+var fun = undefined;
+var fun = function(){...};
+fun = 123;
+fun();
+```
+
+- 执行到`fun()`时,由于fun是一个变量,因此会报错: `fun is not a function`
+
+[再再再再稍微改进一下]
+
+```js
+var fun = 123;
+function fun(){
+    console.log(fun);
+    fun = 456;
+    console.log(fun);
+}
+fun();
+```
+
+- 变量提升改造如下:
+
+```js
+var fun = undefined;
+var fun = function(){...}
+fun = 123
+fun();             
+```
+
+- 执行到`fun()`时,由于fun是一个变量,因此会报错: `fun is not a function`
 
 
 
