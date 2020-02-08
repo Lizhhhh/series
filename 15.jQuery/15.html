@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="js/jquery.min.js"></script>
+    <style>
+      .clearfix:before,
+      .clearfix:after {
+        content: '';
+        display: table;
+      }
+
+      .clearfix:after {
+        clear: both;
+      }
+
+      .clearfix {
+        *zoom: 1;
+      }
+
+      .header ul {
+        width: 700px;
+        height: 50px;
+        padding-top: 15px;
+        background-color: #ccc;
+      }
+      .box {
+        width: 700px;
+        height: 300px;
+        margin: 30px auto;
+      }
+      li {
+        float: left;
+        height: 40px;
+        line-height: 40px;
+        list-style: none;
+        padding: 0 15px;
+      }
+      li:hover {
+        cursor: pointer;
+      }
+      .current {
+        background-color: red;
+        color: white;
+      }
+      .header {
+        padding-top: 15px;
+      }
+      .content {
+        padding-top: 20px;
+        padding-left: 45px;
+      }
+      .content div {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="box">
+      <div class="header clearfix">
+        <ul>
+          <li class="current">商品介绍</li>
+          <li>规格与包装</li>
+          <li>售后保障</li>
+          <li>商品评价(50000)</li>
+          <li>手机社区</li>
+        </ul>
+      </div>
+      <div class="content">
+        <div display="block">商品介绍模块</div>
+        <div>规格与包装模块</div>
+        <div>售后保障模块</div>
+        <div>商品评价(50000)模块</div>
+        <div>手机社区模块</div>
+      </div>
+    </div>
+    <script>
+      $(function() {
+        $('.content div:first').show()
+        $('.box li').click(function() {
+          var currentIndex = $(this).index();
+
+          $(this).addClass('current')
+          $(this)
+            .siblings('li')
+            .removeClass('current')
+
+            $('.content div').hide()
+            $('.content div').eq(currentIndex).show()
+        })
+      })
+    </script>
+  </body>
+</html>

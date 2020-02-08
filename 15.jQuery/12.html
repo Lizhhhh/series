@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="js/jquery.min.js"></script>
+    <style>
+      .wrapper {
+        float: left;
+        margin: 50px auto;
+      }
+      li {
+        display: block;
+        list-style: none;
+      }
+
+      #content {
+        float: left;
+      }
+      #content div {
+        display: none;
+      }
+      #content div:first {
+        display: inline-block;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrapper">
+      <ul id="left">
+        <li><a href="#">1.jpg</a></li>
+        <li><a href="#">2.jpg</a></li>
+        <li><a href="#">3.jpg</a></li>
+        <li><a href="#">4.jpg</a></li>
+        <li><a href="#">5.jpg</a></li>
+        <li><a href="#">6.jpg</a></li>
+        <li><a href="#">7.jpg</a></li>
+        <li><a href="#">8.jpg</a></li>
+        <li><a href="#">9.jpg</a></li>
+      </ul>
+    </div>
+    <div id="content">
+      <div>
+        <a href="#"><img src="images/1.jpg" width="200" height="250" /> </a>
+      </div>
+      <div>
+        <a href="#"><img src="images/2.jpg" width="200" height="250" /> </a>
+      </div>
+      <div>
+        <a href="#"><img src="images/3.jpg" width="200" height="250" /> </a>
+      </div>
+      <div>
+        <a href="#"><img src="images/4.jpg" width="200" height="250" /> </a>
+      </div>
+      <div>
+        <a href="#"><img src="images/5.jpg" width="200" height="250" /> </a>
+      </div>
+      <div>
+        <a href="#"><img src="images/6.jpg" width="200" height="250" /> </a>
+      </div>
+      <div>
+        <a href="#"><img src="images/7.jpg" width="200" height="250" /> </a>
+      </div>
+      <div>
+        <a href="#"><img src="images/8.jpg" width="200" height="250" /> </a>
+      </div>
+      <div>
+        <a href="#"><img src="images/9.jpg" width="200" height="250" /> </a>
+      </div>
+    </div>
+    <script>
+      $(function() {
+        $('#left li').mouseover(function() {
+          let currentIndex = $(this).index()
+          $(this)
+            .children('a')
+            .css('color', 'red')
+          $(this)
+            .siblings('li')
+            .children('a')
+            .css('color', '')
+
+          $('#content div').hide()
+
+          $('#content div')
+            .eq(currentIndex)
+            .show()
+        })
+
+        $('#left li').mouseleave(function() {
+          let currentIndex = $(this).index()
+          $(this)
+            .children('a')
+            .css('color', '')
+        })
+      })
+    </script>
+  </body>
+</html>

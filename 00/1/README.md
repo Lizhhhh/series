@@ -321,7 +321,7 @@ function throttle(handUp, cb){
 
 # 4. 常见面试题
 
-## 4.1 求以下函数的输出
+## 4.1 常见面试题一
 
 ### 4.1.1 考察点: 变量提升、this、作用域
 
@@ -550,6 +550,170 @@ fun();
 ```
 
 - 执行到`fun()`时,由于fun是一个变量,因此会报错: `fun is not a function`
+
+## 4.2 常见面试题二
+
+### 4.2.1 函数的调用
+
+```js
+var n = 123;
+function f1(){
+    console.log(n);
+}
+function f2(){
+    var n = 456;
+    f1();
+}
+f2();
+console.log(n);
+```
+
+- f2在全局调用,f1在f2内调用.相当于在全局调用.因此,以上等价于
+
+```js
+var n = 123;
+function f1(){
+    console.log(n);
+}
+function f2(){
+    var n = 456;
+};
+f1();
+console.log(n);
+```
+
+- 答案会输出: `123 123`
+
+### 4.2.2 arguments
+
+```js
+var length = 100
+function f1() {
+  console.log(this.length)
+}
+var obj = {
+  x: 10,
+  f2: function(f1) {
+    f1()
+    arguments[0]()
+  }
+}
+obj.f2(f1, 1)
+```
+
+- f1调用的时候,它无调用者,因此当前的this指向全局.故在浏览器的环境下输出100
+- 在调用`arguments[0]()`时,里面的this指向的是arguments.`this.length`相当于arguments的长度,因此会输出2
+
+- 答案[浏览器环境下]: `100 2`
+
+[稍微改进一下]
+
+```js
+function f(){
+    console.log(this.a)
+}
+var obj ={
+    a: 2,
+    f: f
+}
+var f2 = obj.f;
+var a = 'hello';
+f2();
+```
+
+- `f2()`无调用者,在浏览器的环境下指向window,在node环境下指向undefined
+- `f2`是`obj.f`的引用,而`obj.f`是`f`的引用.实际上相当于`var f2 = function (){ console.log(this.a) }`
+
+- 因此在浏览器环境下会输出`hello`,在node环境下会输出`undefined`
+
+### 4.2.3 apply、call
+
+- 求下面函数的执行结果
+
+```js
+function f(s) {
+  console.log(this.a, s)
+  return this.a + s
+}
+var obj = {
+  a: 2
+}
+var f2 = function() {
+  return f.apply(obj, arguments)
+}
+var b = f2(3)
+console.log(b)
+```
+
+- 当遇到`b = f2(3)`的时候,会执行`f2(3)`
+- `f2`调用了`f()`,且f 的作用域绑定在obj上.传入的参数是3,由arguments接收
+- f使用形参s接收了一个参数3,然后执行`console.log(this.a, s)`的时候,this指向`obj`,
+- 因此会输出`2 3`,然后返回5. 回调到f2中会 返回5. 即将5赋值给b. 然后执行`console.log(b)`
+
+- 答案: `2 3 5`
+
+
+
+# 5. 无限级目录树的遍历
+
+- `问题描述`: 给定数组的深度是不确定的,如何根据不确定深度的数组渲染成对应的目录结构
+- `栗子`: 有如下数据
+
+```js
+data = [
+    {name: 'a', child:[{name: 'a1'},{name: 'a2', child: [{name:'a21'}]}]},
+    {name: 'b'}
+]
+```
+
+渲染成如下结构:
+
+```html
+<ul>
+    <li>
+        a
+        <ul>
+            <li>a1</li>
+            <li>a2
+                <ul>
+                    <li>a21</li>
+                </ul>
+            </li>
+        </ul>
+    </li>
+    <li>b</li>
+</ul>
+```
+
+- 思路,先对数组的第一层进行遍历.
+
+- 下面设计到jquery对DOM的操作.先简单回顾一下jquery的使用
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

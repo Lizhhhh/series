@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="js/jquery.min.js"></script>
+    <style>
+      div {
+        display: 200px;
+        width: 200px;
+        height: 200px;
+        background-color: pink;
+      }
+    </style>
+  </head>
+  <body>
+    <div src="mov.mp4"></div>
+    <script>
+      // 1. DOM对象转换为jQuery对象
+      var myVideo = document.querySelector('video')
+      $(myVideo)
+      // 2. jQuery对象转换为DOM对象
+      $('video')[0].play();
+      $('video').get(0)/play();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="js/jquery.min.js"></script>
+    <style>
+      .block {
+        width: 200px;
+        height: 200px;
+        background-color: pink;
+        margin: 100px auto;
+      }
+    </style>
+  </head>
+  <body>
+    <div></div>
+    <button>添加类</button>
+    <button>删除类</button>
+    <button>切换类</button>
+    <script>
+      $(function() {
+        // 1. 添加类 addClass()
+        $('button:first').click(function() {
+          $('div').addClass('block')
+        })
+        // 2. 删除类 removeClass()
+        $('button:eq(1)').click(function() {
+          $('div').removeClass('block')
+        })
+        // 3. 切换类 toggleClass()
+        $('button:last').click(function() {
+          $('div').toggleClass('block')
+        })
+      })
+    </script>
+  </body>
+</html>

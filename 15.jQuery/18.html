@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="js/jquery.min.js"></script>
+    <style>
+      .nav li ul {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <ul class="nav">
+      <li>
+        <a href="#">微博</a>
+        <ul>
+          <li>
+            <a href="#">私信</a>
+          </li>
+          <li>
+            <a href="#">评论</a>
+          </li>
+          <li>
+            <a href="#">@我</a>
+          </li>
+        </ul>
+      </li>
+    </ul>
+
+    <script>
+      $(function() {
+        // 鼠标经过
+        // $('ul>li').mouseover(function(){
+        //   $(this).children('ul').show()
+        // })
+        // // 鼠标离开
+        // $("ul>li").mouseout(function(){
+        //   $(this).children('ul').hide()
+        // })
+        $('ul>li a').hover(
+          function() {
+            console.log('移入')
+            var timer = null
+            var that = this;
+            return function() {
+              if (timer) clearTimeout(timer)
+              timer = setTimeout(() => {
+                $(that)
+                  .children('ul')
+                  .slideToggle()
+              }, 100)
+            }
+          },
+          function() {
+            console.log('移出')
+            var timer = null
+            var that = this;
+            return function() {
+              if (timer) clearTimeout(timer)
+              timer = setTimeout(() => {
+                $(that)
+                  .children('ul')
+                  .slideToggle()
+              }, 100)
+            }
+          }
+        )
+      })
+    </script>
+  </body>
+</html>

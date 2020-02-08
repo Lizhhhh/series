@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script src="js/jquery.min.js"></script>
+</head>
+<body>
+  <ul>
+    <li>多个里面筛选几个</li>
+    <li>多个里面筛选几个</li>
+    <li>多个里面筛选几个</li>
+    <li>多个里面筛选几个</li>
+    <li>多个里面筛选几个</li>
+    <li>多个里面筛选几个</li>
+  </ul>
+  <ol>
+    <li>多个里面筛选几个</li>
+    <li>多个里面筛选几个</li>
+    <li>多个里面筛选几个</li>
+    <li>多个里面筛选几个</li>
+    <li>多个里面筛选几个</li>
+    <li>多个里面筛选几个</li>
+    <li>多个里面筛选几个</li>
+  </ol>
+  <script>
+    $(function(){
+      // 改变ul中第一个Li中的颜色
+      $('ul li:first').css('color','red')
+      // 将ol中第三个li的字体放大
+      $('ol li:eq(2)').css('font-size','30px')
+      // 将ol下面所有索引号是奇数行的li的背景色值为#ccc
+      $('ol li:odd').css('background','#ccc')
+    })
+  </script>
+</body>
+</html>
