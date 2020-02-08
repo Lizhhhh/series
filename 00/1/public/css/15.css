@@ -1,0 +1,21 @@
+ul li span {
+  display: inline-block;
+  width: 15px;
+  height: 15px;
+  color: red;
+  margin-right: 10px;
+  border: 1px solid #1890ff;
+  line-height: 15px;
+  text-align: center;
+  vertical-align: middle;
+  border-radius: 50%;
+  cursor: default;
+}
+
+li {
+  list-style-type: none;
+}
+
+li span:hover{
+  cursor: pointer;
+}

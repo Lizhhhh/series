@@ -685,9 +685,56 @@ data = [
 </ul>
 ```
 
-- 思路,先对数组的第一层进行遍历.
+- 思路,先对数组中的第一级数据显示出来
 
-- 下面设计到jquery对DOM的操作.先简单回顾一下jquery的使用
+```js
+$(function(){
+    var str = '<ul>';
+    for(var i=0; i< data.length; i++){
+        str += `<li>${data[i].name}</li>`
+    }
+    str += '</ul>';
+    $('ul').html(str)
+})
+```
+
+- 尝试写第二级元素.
+
+```
+// 首先判断第一级是否含有第二级元素
+if(data[i].child){
+	var str = '<ul>';
+	for(let var j =0; i<data.[i].child.length; j++){
+		str += `<li>${data[i].child[j].name}</li>`
+	}
+	str += "</ul>";
+	$('ul').html(str)
+}
+```
+
+- 可以发现.第二级的过程和第一级的过程是一样的.因此尝试使用递归如下:
+
+```js
+$(function(){
+    function f(data){
+        var str = '<ul>'
+        for(let i =0; i<data.length; i++){
+            if(data[i].child){
+                // 含有孩子元素, 应该渲染成 <ul><li>a<ul><li>a1</li></ul></li></ul>的结构
+                str += `<li>${data[i].name}`
+                str += f(data[i].child)
+                str += "</li>"
+            } else {
+                str += `<li>${data[i].name}</li>`
+            }
+        }
+        str += "</ul>"
+        return str
+    }
+    
+    $(".lists").html(f(data))
+})
+```
 
 
 

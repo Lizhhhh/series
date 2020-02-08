@@ -1,100 +1,55 @@
-var data = [
-  {
-    name: 'IT互联网',
-    child: [
-      {
-        name: '编辑语言',
-        child: [
-          { name: 'java' },
-          { name: 'c#/.net' },
-          { name: 'python' },
-          { name: 'node' },
-          { name: 'javascript' }
-        ]
-      },
-      {
-        name: '移动开发',
-        child: [
-          {
-            name: 'android开发'
-          },
-          {
-            name: 'IOS开发'
-          },
-          {
-            name: 'React Native'
-          },
-          {
-            name: 'Flutter'
-          }
-        ]
-      },
-      {
-        name: '游戏开发',
-        child: [
-          {
-            name: 'phaser游戏开发'
-          },
-          {
-            name: 'webGL游戏开发'
-          }
-        ]
-      }
-    ]
-  },
-  {
-    name: '设计创作',
-    child: [
-      {
-        name: '平面设计',
-        child: [
-          { name: '电商美工' },
-          { name: '综合平面设计' },
-          { name: '摄影' }
-        ]
-      },
-      {
-        name: 'UI设计',
-        child: [
-          { name: '交互设计' },
-          { name: 'webUI设计' },
-          { name: '游戏UI设计' }
-        ]
-      },
-      { name: '软件设计' }
-    ]
-  },
-  {
-    name: '升学考研',
-    child: [
-      { name: '考研' },
-      { name: '大学' },
-      { name: '高中' },
-      { name: '初中' }
-    ]
-  },
-  {
-    name: '职企考证',
-    child: [
-      { name: '公务员', child: [{ name: '教师考试' }, { name: '建筑工程' }] }
-    ]
-  }
+data = [
+  {name: 'a', child:[
+    {name: 'a1'},
+    {name: 'a2', child: [{name:'a21'}]},
+    {name: 'a3', child: [
+      {name: 'a31'},
+      {name: 'a32'},
+      {name: 'a33'},
+      {name: 'a34', child: [
+        {name: 'a341'},
+        {name: 'a342'},
+        {name: 'a343'},
+        {name: 'a344'}
+      ]}
+    ]}
+  ]},
+  {name: 'b'},
+  {name: 'c'}
 ]
-
 $(function() {
-
-  // 获取最外面的lists盒子
-  var listBox = $('.lists');
-
-  genCata(data)
-  function genCata(data) {
-    // 清空盒子中的元素
-    listBox.html('');
-    console.log(listBox)
+  function g(data) {
+    var str = '<ul>'
     for (var i = 0; i < data.length; i++) {
-      console.log(data[i])
+      if (data[i].child) {
+        str += `<li><span>-</span>${data[i].name}`
+        str += g(data[i].child);
+        str += "</li>"
+      } else {
+        str += `<li><span>-</span>${data[i].name}</li>`
+      }
     }
+    str += '</ul>'
+    return str
   }
+  // 渲染dom结构
+  $('.tree').html(g(data))
+
+  // 渲染完成后,给li下面的span添加点击事件
+  $('.tree li span').click(function(){
+    if($(this).siblings('ul').length >0){
+      console.log('可以展开')
+      if($(this).html() == '-'){
+        $(this).html('+')
+        $(this).siblings('ul').hide()
+      } else {
+        $(this).html('-');
+        $(this).siblings('ul').show();
+      }
+    } else {
+      console.log('不能展开')
+    }
+
+  })
+
 })
-
-
