@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>元素批量修改</title>
+  </head>
+  <body>
+    <ul id="box"></ul>
+    <ul id="single"></ul>
+    <script>
+      let box = document.getElementById('box')
+      let single = document.getElementById('single')
+      let str = ``
+      console.time('str')
+      for (let i = 0; i < 50000; i++) {
+        str += `<li>${i}</li>`
+      }
+      box.innerHTML = str
+      console.timeEnd('str')
+
+      // 298.859 ms
+      console.time('single')
+      for (let i = 0; i < 50000; i++) {
+        let newLi = document.createElement('li')
+        newLi.innerHTML = i
+        single.appendChild(newLi)
+        if (i == 49999) {
+          console.timeEnd('single')
+        }
+      }
+    </script>
+  </body>
+</html>
