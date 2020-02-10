@@ -1,3 +1,4 @@
 1 - 金渡教育(挑重点看)  [传送门](https://www.bilibili.com/video/av79716929?from=search&seid=5479901456923227579)
 2 - 开课吧(不建议...)
-3 - 珠峰教育(浏览器渲染机制、DOM的回流与重绘) [传送门](https://www.bilibili.com/video/av65748467?t=82)
+3 - 珠峰教育 [传送门](https://www.bilibili.com/video/av65748467?t=82)、[传送门2](https://www.bilibili.com/video/av87108516?p=1)
+

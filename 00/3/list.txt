@@ -1,2 +1,2 @@
-01.html - (前端性能优化)分离读写
-02.html - (前端性能优化)元素批量修改
+3.1 - 珠峰教育(浏览器渲染机制、DOM的回流与重绘) [传送门](https://www.bilibili.com/video/av65748467?t=82)
+3.2 - 珠峰教育(一线大厂前端面试题) [传送门](https://www.bilibili.com/video/av87108516?p=1)
