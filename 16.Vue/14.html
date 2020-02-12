@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="js/vue.js"></script>
+  </head>
+  <body>
+    <div id="app">
+      <a href="#/zhuye">主页</a>
+      <a href="#/keji">科技</a>
+      <a href="#/caijing">财经</a>
+      <a href="#/yule">娱乐</a>
+
+      <component :is="comName"></component>
+    </div>
+    <script>
+      const zhuye = {
+        template: '<h1>主页信息</h1>'
+      }
+      const keji = {
+        template: '<h1>科技信息</h1>'
+      }
+      const caijing = {
+        template: '<h1>财经信息</h1>'
+      }
+      const yule = {
+        template: '<h1>娱乐信息</h1>'
+      }
+
+      const vm = new Vue({
+        el: '#app',
+        data: {
+          comName: 'zhuye'
+        },
+        components: {
+          zhuye,
+          keji,
+          caijing,
+          yule
+        }
+      })
+
+      window.onhashchange = function() {
+        // 通过location.hash 获取到最新的 hash值
+        // vm.data.comName = location.hash.split('/')[1]
+        vm.$data.comName = location.hash.split('/')[1]
+      }
+    </script>
+  </body>
+</html>

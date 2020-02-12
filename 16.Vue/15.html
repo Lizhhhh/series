@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="js/vue.js"></script>
+    <script src="js/vue-router.js"></script>
+  </head>
+  <body>
+    <div id="app">
+      <router-link to="/user">User</router-link>
+      <router-link to="/register">Register</router-link>
+      <router-view></router-view>
+    </div>
+    <script>
+      const Tab1 = {
+        template:`<h2>Tab1</h2>`
+      }
+      const Tab2 = {
+        template:`<h2>Tab2</h2>`
+      }
+
+      const User = {
+        template: '<h1>User</h1>'
+      }
+      const Register = {
+        template: `
+        <div>
+          <h1>Register</h1>
+          <router-link to="/register/tab1">Tab1</router-link>
+          <router-link to="/register/tab2">Tab2</router-link>
+          <router-view></router-view>
+        </div>
+        `
+      }
+      const router = new VueRouter({
+        routes: [
+          { path: '/', redirect: 'user'},
+          { path: '/user', component: User },
+          { path: '/register', component: Register ,
+            children: [
+              { path: '/register/', redirect: '/register/tab1'},
+              { path: '/register/tab1', component: Tab1 },
+              { path: '/register/tab2', component: Tab2 }
+            ]
+          }
+        ]
+      })
+
+      const vm = new Vue({
+        el: '#app',
+        data: {},
+        router
+      })
+    </script>
+  </body>
+</html>

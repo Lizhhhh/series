@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Document</title>
+    <script src="js/vue.js"></script>
+    <style>
+      .item {
+        display: flex;
+      }
+      a {
+        text-decoration: none;
+        color: black;
+      }
+      .num {
+        width: 40px;
+      }
+      .del {
+        font-size: 35px;
+        margin-left: 15px;
+        margin-top: -15px;
+        color: red;
+      }
+      .del:hover {
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <my-cart></my-cart>
+    </div>
+    <script>
+      var list = [
+        {
+          id: 1,
+          name: 'TCL彩电',
+          price: 1000,
+          num: 1
+        },
+        {
+          id: 2,
+          name: '机顶盒',
+          price: 1000,
+          num: 1
+        },
+        {
+          id: 3,
+          name: '海尔冰箱',
+          price: 1000,
+          num: 1
+        },
+        {
+          id: 4,
+          name: '小米手机',
+          price: 1000,
+          num: 1
+        },
+        {
+          id: 5,
+          name: 'PPTV电视',
+          price: 1000,
+          num: 7
+        }
+      ]
+
+      var CartTitle = {
+        props: ['uname'],
+        template: `
+      <div class="title">{{uname}}的商品</div>
+      `
+      }
+      var CartList = {
+        props: ['list'],
+        template: `
+        <div>
+          <div class="item" v-for="item in list" :key="item.id">
+              <div class="name">{{item.name}}</div>
+              <div class="change">
+                <a href="javascript:;" @click="subtract1(item.id)">-</a>
+                  <input type="text" class="num" :value="item.num" @blur='changeNum(item.id, $event)'/>
+                <a href="javascript:;" @click="add1(item.id)">+</a>
+              </div>
+              <div class="del" @click="del(item.id)">×</div>
+          </div>
+        </div>
+      `,
+        methods: {
+          changeNum: function(id, event) {
+            this.$emit('changeNum', {
+              id: id,
+              num: event.target.value
+            })
+          },
+          del: function(id) {
+            this.$emit('del', id)
+          },
+          subtract1: function(id) {
+            this.$emit('subtract1', id)
+          },
+          add1: function(id) {
+            this.$emit('add1', id)
+          }
+        }
+      }
+      var CartTotal = {
+        props: ['list'],
+        template: `
+        <div>
+          <div>总价{{total}}</div>
+          <button>提交</button>
+        </div>
+        `,
+        computed: {
+          total: function() {
+            var price = 0
+            this.list.forEach(item => {
+              price += item.price * item.num
+            })
+            return price
+          }
+        }
+      }
+
+      Vue.component('my-cart', {
+        data: function() {
+          return {
+            uname: '张三',
+            list: list
+          }
+        },
+        template: `
+      <div class="cart">
+          <cart-title :uname="uname"></cart-title>
+          <cart-list :list="list" @del='delCart($event)' @subtract1='subtractCart($event)' @add1='addCart($event)' @changeNum='changeCart($event)'></cart-list>
+          <cart-total :list='list'></cart-total>
+        </div>
+      `,
+        components: {
+          'cart-title': CartTitle,
+          'cart-list': CartList,
+          'cart-total': CartTotal
+        },
+        methods: {
+          changeCart: function($event) {
+            let { id, num } = $event
+
+            var index = this.list.findIndex(item => {
+              return item.id == id
+            })
+
+            if (num < 1) {
+              this.list.splice(index, 1)
+            } else {
+              this.list[index].num = num
+            }
+          },
+          delCart: function(id) {
+            var index = this.list.findIndex(item => {
+              return item.id == id
+            })
+            this.list.splice(index, 1)
+          },
+          subtractCart: function(id) {
+            var index = this.list.findIndex(item => {
+              return item.id == id
+            })
+            if (this.list[index].num - 1 == 0) {
+              this.list.splice(index, 1)
+            } else {
+              this.list[index].num -= 1
+            }
+          },
+          addCart: function(id) {
+            var index = this.list.findIndex(item => {
+              return item.id == id
+            })
+            this.list[index].num += 1
+          }
+        }
+      })
+      var vm = new Vue({
+        el: '#app'
+      })
+    </script>
+  </body>
+</html>
+

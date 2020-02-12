@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      // fetch('http://localhost:3000/books?id=123')
+      // .then(function(data){
+      //   // text()方法属于fetchAPI的一部分.
+      //   return data.text()
+      // }).then(function(data){
+      //   console.log(data)
+      // })
+
+      //  // get请求方式
+      // fetch('http://localhost:3000/books/456', {
+      //   method: 'get'
+      // })
+      //   .then(data => {
+      //     // text()方法属于fetchAPI的一部分.
+      //     return data.text()
+      //   })
+      //   .then(data => {
+      //     console.log(data)
+      //   })
+
+      // // delete方式
+      //  fetch('http://localhost:3000/books/456', {
+      //   method: 'delete'
+      // })
+      //   .then(data => {
+      //     // text()方法属于fetchAPI的一部分.
+      //     return data.text()
+      //   })
+      //   .then(data => {
+      //     console.log(data)
+      //   })
+
+      // // post方式
+      // fetch('http://localhost:3000/books', {
+      //   method: 'post',
+      //   body: 'uname=lisi&pwd=123',
+      //   headers: {
+      //     'Content-Type': 'application/x-www-form-urlencoded'
+      //   }
+      // })
+      //   .then(data => {
+      //     // text()方法属于fetchAPI的一部分.
+      //     return data.text()
+      //   })
+      //   .then(data => {
+      //     console.log(data)
+      //   })
+
+      // // 传递参数类 `application/json`
+      // fetch('http://localhost:3000/books', {
+      //   method: 'post',
+      //   body: JSON.stringify({
+      //     uname: 'lisi',
+      //     pwd: 123
+      //   }),
+      //   headers: {
+      //     'Content-Type': 'application/json'
+      //   }
+      // })
+      //   .then(data => {
+      //     return data.text()
+      //   })
+      //   .then(ret => {
+      //     console.log(ret)
+      //   })
+
+      // // PUT参数.
+      // fetch('http://localhost:3000/books/123', {
+      //   method: 'put',
+      //   body: JSON.stringify({
+      //     uname: 'lisi',
+      //     pwd: 123
+      //   }),
+      //   headers: {
+      //     'Content-Type': 'application/json'
+      //   }
+      // })
+      //   .then(data => {
+      //     return data.text()
+      //   })
+      //   .then(ret => {
+      //     console.log(ret)
+      //   })
+
+      // 获取json格式的数据
+      fetch('http://localhost:3000/json', {
+        method: 'get'
+      })
+        .then(data => {
+          return data.json()
+        })
+        .then(ret => {
+          console.log(ret)
+        })
+    </script>
+  </body>
+</html>

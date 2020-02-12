@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script src="js/axios.js"></script>
+    <script>
+      // async/await 处理异步操作
+
+      axios.defaults.baseURL = 'http://localhost:3000'
+
+      // const getAdata = async () => {
+      //   return await axios.get('adata')
+      // }
+      async function queryData() {
+        var ret = await new Promise((resolve, reject) => {
+          setTimeout(() => {
+            resolve('nihao')
+          }, 1000)
+        })
+        return ret
+      }
+      queryData().then(data => {
+        console.log(data)
+      })
+    </script>
+  </body>
+</html>

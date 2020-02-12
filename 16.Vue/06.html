@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      var p = new Promise(function(resolve, reject) {
+        setTimeout(() => {
+          var flag = true
+          if (flag) {
+            resolve('hello')
+          } else {
+            reject('出错了')
+          }
+        }, 100)
+      })
+      p.then(
+        function(data) {
+          console.log(data)
+        },
+        function(info) {
+          console.log(info)
+        }
+      )
+    </script>
+  </body>
+</html>

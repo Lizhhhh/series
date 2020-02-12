@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Document</title>
+    <script src="js/vue.js"></script>
+    <style>
+      .current {
+        color: red;
+        font-size: 18px;
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <fruit-list :list="list">
+        <template slot-scope="slotProps">
+          <span class="current" v-if="slotProps.info.id == 2">
+            {{slotProps.info.name}}
+          </span>
+          <span v-else>{{slotProps.info.name}}</s>
+        </template>
+      </fruit-list>
+    </div>
+    <script>
+      Vue.component('fruit-list', {
+        props: ['list'],
+        template: `
+        <div>
+          <li :key="item.id" v-for="item in list">
+            <slot :info="item">
+              {{item.name}}
+            </slot>
+          </li>
+        </div>
+        `
+      })
+      var vm = new Vue({
+        el: '#app',
+        data: {
+          list: [
+            {
+              id: 1,
+              name: 'apple'
+            },
+            {
+              id: 2,
+              name: 'orange'
+            },
+            {
+              id: 3,
+              name: 'banana'
+            }
+          ]
+        }
+      })
+    </script>
+  </body>
+</html>

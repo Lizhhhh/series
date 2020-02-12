@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script src="js/axios.js"></script>
+    <script>
+      // // 查询数据
+      // axios.get('http://localhost:3000/adata').then(function(res) {
+      //   console.log(res.data)
+      // })
+      // // 删除数据
+      // axios.delete('http://localhost:3000/adata/123').then(function(res) {
+      //   console.log(res.data)
+      // })
+
+      // // 添加
+      // axios
+      //   .post('http://localhost:3000/adata/', { id: 1, name: 'marron' })
+      //   .then(function(res) {
+      //     console.log(res.data)
+      //   })
+
+      // 修改
+      axios
+        .put('http://localhost:3000/adata/1', { id: 1, name: 'marron',age: 18 })
+        .then(function(res) {
+          console.log(res.data)
+        })
+    </script>
+  </body>
+</html>
