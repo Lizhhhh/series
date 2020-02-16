@@ -37,13 +37,16 @@ JavaScript
 # 2 BAT/TMD大公司的面试
 
 - 什么是标签语义化
-  - 合理的标签干合理的事情,头部使用header标签
-
+  
+- 合理的标签干合理的事情,头部使用header标签
+  
 - 都有哪些标签,都是啥意思
+  
   - 有块级标签,行内标签,行内块标签.
 - 块级标签和行内标签的区别
-  - 块级标签独占一行,行内标标签没用宽高.
-
+  
+- 块级标签独占一行,行内标标签没用宽高.
+  
 - 如何转换: 
 
   - 使用display属性
@@ -743,19 +746,39 @@ React:
 
 <b>ES5: Object.defineProperty</b>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+```html
+<body>
+    姓名: <span id="spanName"></span>
+    <br>
+    <input type="text" id="inpName">
+    
+    <!-- import js -->
+    <script>
+        let obj ={
+            name: ''
+        };
+        let newObj ={
+            ...obj
+        };
+        Object.defineProperty(obj, 'name', {
+            get() {
+                return newObj.name
+            },
+            set(val) {
+                newObj.name = val;
+                observe();
+            }
+        })
+        
+        function observe() {
+            spanName.innerHTML = newObj.name;
+        }
+        inputName.oninput = function(){
+            obj.name = this.value;
+        }
+    </script>
+</body>
+```
 
 
 
@@ -763,6 +786,20 @@ React:
 
 - Vue框架的核心是 MVVM
 - React框架的核心是 MVC
+
+本质上没区别,都是数据的改变影响视图的改变,视图的改变反过来影响数据的改变.不同的是,vue中vue充当VM帮助实现了视图的改变到数据的改变,而react得靠自己来实现
+
+
+
+
+
+
+
+
+
+
+
+
 
 ## 3.3 跨域问题的解决方案和实现原理
 

@@ -585,13 +585,436 @@ App({
   - 在注册时,可以绑定初始化数据、生命周期回调、事件处理函数等
   - [官网小栗子 - Page](https://developers.weixin.qq.com/miniprogram/dev/reference/api/Page.html)
 
+##### 1. 监听页面的生命周期函数
 
+- 从服务器获取数据
+
+```js
+Page({
+    // 页面被加载时
+    onLoad(){
+        // 一般在这里发送网络请求,得到数据
+        wx.request({
+            url: 'http://123.207.32.32:8000/recommend',
+            success: res=>{
+                console.log(res)
+            }
+        })
+    },
+    // 页面初次渲染完成时,回调
+    onReady(){
+        
+    },
+    // 页面显示出来时,回调
+    onShow(){
+        
+    },
+    // 页面隐藏时
+    onHide(){
+        
+    },
+    // 页面卸载时,页面跳转时,返回上一级页面时触发的函数
+    onUnload(){
+        
+    }
+})
+```
+
+##### 2. 初始化数据
+
+```js
+// pages/home/home.js
+Page({
+    data:{
+        message:"marron",
+        list: [
+            {name: 'zs', age: 18},
+            {name: 'ls', age: 19}
+        ]
+    }
+})
+```
+
+- 初始化的数据可以通过mustache语法将数据渲染到页面
+
+```html
+<!-- pages/home/home.wxml -->
+<view>{{message}}</view>
+<view wx:for="list">
+    {{item.name}} - {{item.age}}
+</view>
+```
+
+##### 3. 监听wxml相关的一些事件
+
+```html
+<!--pages/home/home.wxml-->
+<button size="mini" bindtap="handleClick">按钮</button>
+<view bindtap="handleClickView">view</view>
+```
+
+```js
+// pages/home/home.js
+Page({
+    handleClick(){
+        console.log('点')
+    },
+    handleClickView(){
+        console.log('点点')
+    }
+})
+```
+
+##### 4. 监听其他事件
+
+- 监听页面滚动
+
+```js
+// pages/home/home.js
+onPageScroll(obj){
+    conosle.log(obj)
+}
+```
+
+- 监听页面滚动到底部
+
+```js
+// pages/home/home.js
+onReachBottom(){
+    console.log('滚动到底部')
+}
+```
+
+##### 5. Page实例生命周期
+
+```mermaid
+graph TB
+        subgraph AppService Thread
+        s1(start)
+        s2(Created)
+        s3(waiting notify...)
+        s4(waiting notify...)
+        s5(Active)
+        s6(Alive)
+        s7(Active)
+        s8(End)
+        end
+        subgraph View Tread
+        v1(start)
+        v2(inited)
+        v3(waiting data)
+        v4(Ready)
+        v5(Rerender)
+        v6(Rerender)
+        v7(Rerender)
+        v8(End)
+        end
+        
+        g1(onLoad)
+        g2(onShow)
+		
+        v1 -->|init..|v2
+        s1 -->|Create..|g1
+        s1-->s2
+        g1 --> g2
+        g2 --> s2
+        s2-->s3
+        v2-->|Notify|s3
+        s3-->s4
+        v2-->v3
+        s3-->|Send initial Data|v3
+        v3-->|First Render|v4
+        v4-->|Notify|s4
+        s4-->s5
+        v4-->v5
+        s4-->onReady
+        onReady-->s5
+        s5-->s6
+        s5-->|Send Data|v5
+        s5-->|Send Data|v6
+        v5-->v6
+        v6-->v7
+        s5-->onHide
+        onHide-->s6
+        s6-->s7
+        s6-->|Send Data...|v7
+        s6-->onShow
+        onShow-->s7
+        s7-->s8
+        s7-->onUnload
+        onUnload-->s8
+        v7-->v8
+```
+
+1. 渲染层要展示,遇到mustache语法时,会问逻辑层要数据(notify),之后处于阻塞状态.等待逻辑层的数据
+2. 逻辑层首先会初始化一个实例,然后等待渲染层的通知(notify),得到通知后,会将初始化数据传递给渲染层,然后等待通知
+3. 渲染层得到初始化的数据化,会进行首次渲染,然后发送一个通知给逻辑层.
+4. 逻辑层得到通知后,会执行`onReady`事件
+5. 之后,每数据发生一次变化,逻辑层就会将变化的数据发送给渲染层.渲染层会根据数据的变换重新进行`rerender`
+6. 当当前页面被隐藏时,会触发`onHide`事件
+7. 当显示当前页面时,会触发`onShow`事件
+8. 当页面被销毁时会触发`onUnload`事件
+
+
+
+### 5. 小程序 - 常用的内置组件
+
+#### 5.1 Text组件
+
+- Text组件用于显示文本,类似于span标签,是行内元素
+
+| 属性       | 类型    | 默认值 | 必填 | 说明         |
+| ---------- | ------- | ------ | ---- | ------------ |
+| selectable | boolean | false  | 否   | 文本是否可选 |
+| space      | string  |        | 否   | 显示连续空格 |
+| decode     | boolean | false  | 否   | 是否解码     |
+
+```html
+<!--pages/text/text.wxml-->
+<!-- 1. 基本使用 -->
+<text>Hello World\n</text>
+<text>你好,小程序</text>
+
+<!-- 2.selectable属性 -->
+<!-- 默认情况下, 长安文本是不能选中的 -->
+<text selectable="{{true}}">\n可以选中的文本</text>
+<text selectable>\n可以选中的文本</text>
+<text selectable>\n可以选中的文本</text>
+<text selectable>\n可以选中的文本</text>
+<text selectable>\n可以选中的文本</text>
+<text selectable>\n可以选中的文本</text>
+<text selectable>\n可以选中的文本</text>
+<!-- 长按不能选择-->
+<text>\n长按不能选中</text>
+<text>\n长按不能选中</text>
+<text>\n长按不能选中</text>
+<text>\n长按不能选中</text>
+<text>\n长按不能选中</text>
+<text>\n长按不能选中</text>
+<text>\n长按不能选中</text>
+<text>\n长按不能选中</text>
+<text>\n长按不能选中</text>
+
+
+<!-- 3.space属性: 决定文本空格的大小 -->
+<text>\nHello World \n</text>
+<!-- ensp:半个中文的大小 -->
+<text space="ensp">Hello World \n</text>
+<!-- emsp:一个中文的大小 -->
+<text space="emsp">Hello World \n</text>
+<!-- 根据字体设置空格的大小 -->
+<text space="nbsp">Hello World \n</text>
+
+
+<!-- 4.decode: 是否解码文本 -->
+<text> 5 &gt; 3</text>
+<text decode> 5 &gt; 3</text>
+```
+
+#### 5.2 Button组件
+
+- Button组件用于创建按钮,默认块级元素
+
+- 常见属性:
+
+| 属性        | 类型    | 默认值       | 必填 | 说明                                                         |
+| ----------- | ------- | ------------ | ---- | ------------------------------------------------------------ |
+| size        | string  | default      | 否   | 按钮的大小                                                   |
+| type        | string  | default      | 否   | 按钮的样式类型                                               |
+| plain       | boolean | false        | 否   | 按钮是否镂空,背景色透明                                      |
+| disabled    | boolean | false        | 否   | 是否禁用                                                     |
+| loading     | boolean | false        | 否   | 名称前是否带loading图标                                      |
+| form-type   | string  |              | 否   | 用于`<form>`组件,点击会触发`<form>`组件的 submit/reset 事件  |
+| open-type   | string  |              | 否   | 微信开放能力                                                 |
+| hover-class | string  | button-hover | 否   | 指定按钮按下去的样式类,当`hover-class="none"`时,没有点击态效果 |
+
+```html
+<!--pages/button/button.wxml-->
+<!-- 1.按钮的基本使用 -->
+<view class="row">
+  <view>1.按钮的基本使用</view>
+  <button>按钮</button>
+</view>
+
+
+<!-- 2.size: mini -->
+<view class="row">
+  <view>2.size: mini</view>
+  <button size="mini">mini按钮</button>
+  <button size="mini">mini按钮</button>
+</view>
+
+
+<!-- 3.type: primary、default、warn -->
+<view class="row">
+  <view>3.type: primary、default、warn</view>
+  <button size="mini" type="primary">mini按钮 primary</button>
+  <button size="mini" type="default">mini按钮 default</button>
+  <button size="mini" type="warn">mini按钮 warn</button>
+</view>
+
+
+<!-- 4.plain: 镂空效果 -->
+<view class="row">
+  <view>4.plain: 镂空效果</view>
+  <button size="mini" type="primary">mini按钮 primary 非镂空</button>
+  <button size="mini" type="primary" plain>mini按钮 primary 镂空</button>
+</view>
+
+
+<!-- 5.disable: 不可用 -->
+<view class="row">
+  <view>5.disable: 不可用</view>
+  <button size="mini">按钮</button>
+  <button size="mini" disabled>按钮禁用</button>
+</view>
+
+
+<!-- 6.loading: 加载 -->
+<view class="row">
+  <view>6.loading: 加载</view>
+  <button size="mini">按钮</button>
+  <button size="mini" loading="{{isLoading}}">loading 按钮</button>
+</view>
+
+
+<!-- 7.hover-class: 点击时候的样式 -->
+<view class="row">
+  <view>7.hover-class: 点击时候的样式 </view>
+  <button hover-class="pressed">按钮</button>
+</view>
+```
+
+#### 5.3 View组件
+
+- 视图组件 (块级元素,独占一行,通常作为容器)
+
+```html
+<!--pages/view/view.wxml-->
+<!-- 1.view的基本使用 -->
+<view class="box">哈哈哈</view>
+<view>呵呵呵</view>
+
+<!-- 2.hover-class: 按下时的样式 -->
+<view class="box1" hover-class="boxhover">box1</view>
+
+<!-- 3.hover-stay-time: 松开时,点击态持续的时间, 默认400ms -->
+<view class="box1" hover-class="boxhover" hover-stay-time="{{0}}">box1</view>
+
+<!-- 4. hover-start-time: 按住后多久会出现点击态 -->
+<view class="box1" hover-class="boxhover" hover-start-time="{{3000}}">box1</view>
+
+<!-- 5. hover-stop-propagation -->
+<view class="father" hover-class="fatherHover">
+  <view class="son" hover-class="sonHover">
+    未阻止事件冒泡
+  </view>
+</view>
+<view class="father" hover-class="fatherHover">
+  <view class="son" hover-class="sonHover" hover-stop-propagation>
+    阻止事件冒泡
+  </view>
+</view>
+```
+
+#### 5.4 Image组件
+
+| 属性      | 类型        | 默认值      | 必填 | 说明                                                |
+| --------- | ----------- | ----------- | ---- | --------------------------------------------------- |
+| src       | string      |             | 否   | 图片资源地址                                        |
+| mode      | string      | scaleToFill | 否   | 图片裁剪、缩放的模式                                |
+| lazy-load | boolean     | false       | 否   | 图片懒加载,在即将进入一定范围(上下三屏)时才开始加载 |
+| binderror | eventhandle |             | 否   | 当错误发生时触发,event.detail = {errMsg}            |
+| bindload  | eventhandle |             | 否   | 当图片载入完毕时触发,event.detail = {height, width} |
+
+- image组件可以写成单标签`<image />`,也可以写成双标签`<image></image>`
+- image组件默认有自己的大小: 320 * 240
+
+```html
+<!--pages/image/image.wxml-->
+<!-- 1. src: 图片路径 -->
+<!-- 绝对路径 -->
+<image src='/assets/pics/1.jpg' />
+<!-- 相对路径 -->
+<image src='../../assets/pics/1.jpg' />
+<!-- 远程路径 -->
+<image src="https://res.wx.qq.com/wxdoc/dist/assets/img/0.4cb08bb4.jpg" />
+
+<!-- 补充: 选中相册中的图片-->
+<button bindtap="handleChooseAlbum">选中</button>
+<image src="{{imagePath}}" />
+
+<!-- 3.bindload: 监听图片加载完成 -->
+<!-- 4.lazy-load: 图片懒加载 -->
+<view>--------------------</view>
+<image 
+  src="https://res.wx.qq.com/wxdoc/dist/assets/img/0.4cb08bb4.jpg" bindload="handImageLoad"
+  lazy-load
+/>
+
+<!-- 5.show-menu-by-longpress: 开启长按图片识别小程序菜单 -->
+<image src="/assets/pics/17.jpg" show-menu-by-longpress />
+
+<!-- 6.mode: 图片的显示 -->
+<view> 
+  <view>图片的适配请看官方网站</view>
+  <view>https://developers.weixin.qq.com/miniprogram/dev/component/image.html </view>
+</view>
+```
+
+```js
+// pages/image/image.js
+Page({
+
+  /**
+   * 页面的初始数据
+   */
+  data: {
+    imagePath: '',
+    imagePath1: '',
+  },
+  handleChooseAlbum() {
+    // 系统API,让用户在相册中选择图片(或者拍照)
+    wx.chooseImage({
+      success: res => {
+        // 1.取出路径
+        const path = res.tempFilePaths[0]
+
+        // 设置路径
+        this.setData({
+          imagePath: path
+        })
+      },
+    })
+  },
+  handleChooseAlbum1() {
+    // 系统API,让用户在相册中选择图片(或者拍照)
+    wx.chooseImage({
+      success: res => {
+        // 1.取出路径
+        const path = res.tempFilePaths[0]
+
+        // 设置路径
+        this.setData({
+          imagePath1: path
+        })
+      },
+    })
+  },
+  handImageLoad(){
+    console.log('图片加载完成')
+  }
+
+})
+```
+
+#### 5.5 Input组件
 
 
 
 ### x. 小程序常见API
 
-1. 监听点击事件 - `bindtap`
+#### x.1 监听点击事件 - `bindtap`
 
 ```html
 <button size="mini" bindtap="handleGet">点击试试</button>
@@ -606,7 +1029,7 @@ Page({
 })
 ```
 
-2. 监听点击事件获取用户信息 - `open-type && bindgetuserinfo`
+#### x.2 监听点击事件获取用户信息 - `open-type && bindgetuserinfo`
 
 ```html
 <button size="mini" open-type="getUserInfo" bindgetuserinfo="handleGetUserInfo">
@@ -622,14 +1045,14 @@ Page({
 })
 ```
 
-3. 展示用户信息 - `open-data`
+#### x.3 展示用户信息 - `open-data`
 
 ```html
 <open-data type="userNickName"></open-data>
 <open-data type="userAvatarUrl"></open-data>
 ```
 
-4. 全局变量
+#### x.4 全局变量 - App
 
 - 全局变量是在App注册时候声明的
 
@@ -661,6 +1084,106 @@ Page({
 ```
 
 注: 上述的globalData可以是任意的非保留字符串,如改为`globalData111`
+
+#### x.5 跳过证书认证
+
+[场景] : 在home.js中,发送网络请求,但是没有在微信小程序控制台设置允许访问的域名,可以在微信提供的IDE中选择详情 -> 勾选`不校验合法域名、web-view(业务域名)、LTS版本以及HTTPS证书`
+
+```js
+// home.js
+Page({
+    // 页面被加载时触发的生命周期函数
+    onLoad(){
+        // 一般在这里发送网络请求
+        wx.request({
+            url: 'http://123.207.32.32:8000/recommend',
+            success: res=>{
+                console.log(res)
+            }
+        })
+    }
+})
+```
+
+#### x.6 更新数据并渲染到页面 - setData
+
+[场景] : 数据的变化没有对应的改变视图,需要使用微信提供的`setData`方式,让数据的变化影响到视图
+
+```js
+// home.js
+Page({
+    onLoad(){
+        wx.request({
+            url: 'http://123.207.32.32:8000/recommend',
+            success: res=>{
+                this.setData({
+                    list: data
+                })
+            }
+        })
+    }
+})
+```
+
+#### x.7 循环遍历数组 - wx:for
+
+[场景] : 将数组循环显示到视图
+
+```html
+<view wx:for="{{list}}">
+    {{item.name}} - {{item.age}}
+</view>
+```
+
+#### x.8 监听下拉刷新 - onPullDownRefresh
+
+[场景] : 手机下拉刷新获取数据
+
+```js
+// pages/home/home.json
+{
+    "enablePullDownRefresh": true
+}
+```
+
+```js
+// pages/home/home.js
+Page({
+    onPullDownRefresh(){
+        console.log('下拉刷新的事件')
+    }
+})
+```
+
+#### x.9 调用拍照功能,并上传照片
+
+```html
+<!-- pages/image/image.wsml -->
+<!-- 选中相册中的图片 -->
+<button bindtap="handleChooseAlbum">选中</button>
+<image src="{{imagePath}}" />
+```
+
+```js
+// pages/image/image.js
+Page({
+    data:{
+      imagePath: ''  
+    },
+    handleChooseAlbum(){
+        // 系统API,让用户在相册中选择图片或者拍照
+       	wx.chooseImage({
+            success: res=>{
+                const path = res.tempFilePaths[0];
+                
+                this.setData({
+                	imagePath: path;   
+                })
+            }
+        })
+    }
+})
+```
 
 
 
