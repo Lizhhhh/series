@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <!-- 写模板 -->
+    <div id="root">
+      <div>
+        <div>
+          <p>{{name}} - {{message}}</p>
+        </div>
+      </div>
+      <p>{{name}}</p>
+      <p>{{message}}</p>
+    </div>
+    <script>
+      function compiler(template, data) {
+        let mustache = /\{\{(.+?)\}\}/g
+        let childNodes = template.childNodes
+        for (let i = 0, len = childNodes.length; i < len; i++) {
+          let type = childNodes[i].nodeType
+          if (type == 3) {
+            let txt = childNodes[i].nodeValue
+            txt = txt.replace(mustache, function(_, g) {
+              let key = g.trim()
+              let value = data[key]
+              return value
+            })
+            childNodes[i].nodeValue = txt
+          } else if (type == 1) {
+            compiler(childNodes[i], data)
+          }
+        }
+      }
+
+      function Mar(options) {
+        // 内部数据使用_开头, 只读数据使用$开头
+        this._data = options.data
+        this._el = options.el
+
+        // 准备工作(准备模板)
+        this._templateDOM = document.querySelector(this._el)
+        this._parent = this._templateDOM.parentNode
+
+        // 渲染工作
+        this.render()
+      }
+
+      Mar.prototype.render = function() {
+        this.compiler()
+      }
+
+      // 编译: 将模板与数据结合得到真正的DOM元素
+      Mar.prototype.compiler = function(tmpNode) {
+        let realHTMLDOM = this._templateDOM.cloneNode(true)
+        compiler(realHTMLDOM, this._data)
+        this.update(realHTMLDOM)
+      }
+
+      // 将DOM的元素放到页面中
+      Mar.prototype.update = function(real) {
+        this._parent.replaceChild(real, document.querySelector('#root'))
+      }
+
+      let app = new Mar({
+        el: '#root',
+        data: {
+          name: 'jim',
+          message: 'info'
+        }
+      })
+    </script>
+  </body>
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <!-- 写模板 -->
+    <div id="root">
+      <div>
+        <div>
+          <p>{{name}} - {{message}}</p>
+        </div>
+      </div>
+      <p>{{name}}</p>
+      <p>{{msg}}</p>
+    </div>
+    <script>
+      let mustache = /\{\{(.+?)\}\}/g
+
+      // 步骤拆解
+      /*
+        1. 拿到模板
+        2. 拿到数据 (data)
+        3. 将数据与模板结合,得到的是HTML元素(DOM元素)
+        4. 放到页面中
+      */
+      let tmpNode = document.querySelector('#root')
+      let data = {
+        name: '一个新name',
+        message: '一个消息',
+        msg: '哈哈哈'
+      }
+      function compiler(template, data) {
+        let childNodes = template.childNodes // 取出子元素
+        for (let i = 0, len = childNodes.length; i < len; i++) {
+          // 1，元素、 3.文本
+          let type = childNodes[i].nodeType
+          if (type == 3) {
+            // 文本节点,判断里面是否有{{}}插值
+            let txt = childNodes[i].nodeValue // 该属性只有文本节点才有意义
+            txt = txt.replace(mustache, function(_, g) {
+              let key = g.trim() // 写在双花括号里面的东西
+              let value = data[key]
+              // 将{{ xxxx }} 用这个替换
+              return value
+            })
+            childNodes[i].nodeValue = txt
+            // 有没有双括号.
+          } else if (type == 1) {
+            // 元素,考虑它有没有子元素,是否需要将其子元素进行判断是否要插值.
+            compiler(childNodes[i], data)
+          }
+        }
+      }
+
+      let generateNode = tmpNode.cloneNode(true) // 这里是DOM元素,可以这么用
+
+      console.log(tmpNode)
+      compiler(generateNode, data)
+      console.log(generateNode)
+
+      // 4. 放到页面当中
+      root.parentNode.replaceChild(generateNode, root)
+    </script>
+  </body>
+</html>
