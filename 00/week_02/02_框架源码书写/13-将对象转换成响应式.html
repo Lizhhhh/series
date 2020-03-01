@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      var o = {
+        name: 'jim',
+        age: 19,
+        gender: '男'
+      }
+      function defineReactive(target, key, value, enumerable) {
+        Object.defineProperty(target, key, {
+          configurable: true,
+          enumerable: !!enumerable,
+          get() {
+            console.log(`读取o的${key}属性`)
+            return value
+          },
+          set(newVal) {
+            console.log(`设置o的${key}属性为${newVal}`)
+            value = newVal
+          }
+        })
+      }
+
+      // 将对象转换为响应式
+      Object.keys(o).forEach(k => {
+        defineReactive(o, k, o[k], true)
+      })
+    </script>
+  </body>
+</html>

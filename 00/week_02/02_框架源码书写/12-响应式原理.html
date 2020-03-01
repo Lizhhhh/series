@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      var o = {}
+
+      // 给o提供属性
+      o.name = '张三'
+      Object.defineProperty(o, 'age', {
+        configurable: true,
+        writable: true,
+        enumerable: !true, // 可枚举: 能够被for ... in 循环遍历到
+        value: 19
+      })
+
+      // get 和 set 上
+      // 要响应式就表示在赋值和读取的时候,附带的要做一些事情
+
+      let _gender
+      Object.defineProperty(o, 'gender', {
+        configurable: true,
+        // writable: true,
+        enumerable: true,
+        get() {
+          return _gender
+        },
+        set(newVal) {
+          _gender = newVal
+        }
+      })
+
+      // 如果
+    </script>
+  </body>
+</html>

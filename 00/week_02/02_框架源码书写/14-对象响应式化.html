@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      let data = {
+        name: '张三',
+        age: 19,
+        course: [{ name: '语文' }, { name: '数学' }, { name: '英语' }]
+      }
+
+      function defineReactive(target, key, value, enumerable) {
+        if (typeof value == 'object' && value !== null && !Array.isArray(value)) {
+          // 非数组的引用类型
+          reactify(value)
+        }
+
+        Object.defineProperty(target, key, {
+          configurable: true,
+          enumerable: !!enumerable,
+
+          get() {
+            console.log(`读取o的${key}属性`)
+            return value
+          },
+          set(newVal) {
+            console.log(`设置o的${key}属性为${newVal}`)
+            value = newVal
+          }
+        })
+      }
+
+      // 将对象o响应式化
+      function reactify(o) {
+        Object.keys(o).forEach(k => {
+          let value = o[k]
+          if (Array.isArray(value)) {
+            // 数组
+            value.forEach(val => {
+              reactify(val)
+            })
+          } else {
+            defineReactive(o, k, value, true)
+          }
+        })
+      }
+      reactify(data)
+    </script>
+  </body>
+</html>

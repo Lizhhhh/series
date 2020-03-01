@@ -413,7 +413,7 @@ vue的数据双向绑定将MVVM作为数据绑定的入口,整合Observer,Compil
     <div id="app">
         <input type="text" id="txt">
     </div>
-</body>    
+</body>
 <script>
     var obj = {}
     var newObj = {}
