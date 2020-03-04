@@ -427,5 +427,230 @@ vue的数据双向绑定将MVVM作为数据绑定的入口,整合Observer,Compil
 </script>
 ```
 
+# 对象原型
+
+[参考 - MDN](https://developer.mozilla.org/zh-CN/docs/Learn/JavaScript/Objects/Object_prototypes)
+
+## Javascript中的原型
+
+在Javascript中,每一个函数都有一个特殊的属性,叫做原型
+
+下面获取函数的原型`fn.prototype`
+
+```js
+function f1(){}
+console.log(f1.prototype)
+/*
+	{
+		constructor: f f1()
+		__proto__:{
+			constructor: f Object()
+			__defineGetter__: f __defineGetter__()
+			__defineSetter__: f __defineSetter__()
+			hasOwnProperty: f hasOwnProperty()
+			__lookupGetter__: f __lookupGetter__()
+			__lookupSetter__: f __lookupSetter__()
+			isPrototypeOf: f isPrototypeOf()
+			...
+		}
+	}
+*/
+```
+
+下面给函数的原型添加属性`fn.prototype.hello = 'world'`
+
+```js
+function f1(){}
+f1.prototype.hello = 'world'
+console.log(f1.prototype)
+/*
+	{
+		hello: "world"
+		constructor: f f1()
+		__proto__: Object
+	}
+*/
+```
+
+创建一个函数的实例`new fn()`,并给实例添加属性
+
+```js
+function Person(){}
+Person.prototype.hello = 'world'
+var p1 = new Person()
+p1.say = 'hi'
+console.log(p1)
+/*
+	{
+		say: "Hi"
+		__proto__:{
+			hello: "world"
+			constructor: f Person()
+			__proto__: Object
+		}
+	}
+*/
+```
+
+浏览器访问某个属性的寻找顺序:
+
+- 首先会寻找这个实例是否含有该属性
+- 如果有则返回,否则会通过`__proto__`寻找该实例的原型`Person.prototype`上是否含有该属性.
+- 如果有则返回,否则会通过`__proto__.__proto__`的上寻找该属性.
+- 如此循环.到最后`__proto__.__proto__. ... = undefined`则返回undefined
+
+## 理解原型对象
+
+下面定义一个构造器函数
+
+```js
+function Person(first, last, age, gender, interests){
+    this.first = first
+    this.last = last
+    this.age = age
+    this.gender = gender
+    this.interests = interests
+}
+var p1 = new Person("Li","Bruce",18,'男','coding')
+console.log(p1.__proto__ === Person.prototype) // true
+console.log(p1.__proto__.__proto__ === Object.prototype) // true
+console.log(p1)
+/*
+	{
+		first: "Li"
+		last: "Bruce"
+		age: 18
+		gender: "男"
+		interests: "coding"
+		__proto__:{
+			constructor: f Person(first, last, age, gender, interests)
+			__proto__:{
+				constructor: f Object()
+				__defineGetter__: f __defineGetter__()
+				...
+				valueOf: f valueOf()
+				...
+			}
+		}
+	}
+*/
+```
+
+- 此时存在一条原型链:
+
+```mermaid
+graph LR
+	1(p1)
+	2(Person.prototype)
+	3(Object.prototype)
+	1 ==__proto__==> 2
+	2 -->|__proto__| 3
+```
+
+此时,调用如下:
+
+```js
+p1.valueOf()
+```
+
+根据前面的规则:
+
+- 浏览器首先检查,p1对象是否含有`valueOf()`方法
+- 如果没有,则浏览器检查p1对象的原型对象(Person.prototype, 通过浏览器提供的`__proto__`访问)是否具有可用的`valueOf()`方法
+- 如果还没有,浏览器会检查`Person()`构造函数的prototype属性所指向的对象的原型对象(Object.prototype)是否含有该方法,如果有则返回,否则返回undefined
+
+> 原型链中的方法和属性没有被复制到其他对象 -- 它们被访问需要通过"原型链"的方式
+>
+> 官方并未提供`__proto__`属性,在JavaScript语言标准中用[[prototype]]表示.然而,大多数现代浏览器还是提供了一个名为`__proto__`的属性.
+
+
+
+## prototype属性: 继承成员被定义的地方
+
+查看[MDN - Object](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Object)可以看到,Object有很多属性,但是在上面的p1中,并不是全部都继承了.
+
+原因在于: 被继承的属性仅仅只是定义在`Object.prototype`上的属性.定义在Object本身上的属性是不会被继承的
+
+看下面的栗子:
+
+```js
+function Person(){}
+console.log(Person.prototype)
+/*
+	{
+		constructor: f Person()
+		__proto__: Object
+	}
+*/
+```
+
+默认情况下,构造器(此处为Person)的`prototype`属性初始为空白.
+
+
+
+## 静态成员与实例成员
+
+- `静态成员`: 在构造函数本身上添加的成员
+- `实例成员`: 构造函数内部通过this添加的成员,只能通过实例化的对象来访问
+
+```js
+function Person(name, age){
+    this.name = name
+    this.age = age
+}
+Person.sex = '男'
+var p1 = new Person('Marron', 18)
+// name、age就是实例成员
+// sex就是静态成员
+```
+
+## 使用prototype的好处
+
+节约内存.例如下述:
+
+```js
+function Person(name, age){
+    this.name = name
+    this.age = age
+    this.sayHi = function(){
+        console.log('Hi ~')
+    }
+}
+var p1 = new Person('Mar', 18)
+var p2 = new Person('Marron', 19)
+```
+
+上面通过构造函数,生成了2个实例化对象,但是两个实例化对象的方法的内存地址是不同的.
+
+```js
+console.log(p1.sayHi == p2.sayHi)  // false
+```
+
+引用prototype属性可以节约内存
+
+```js
+function Person(name, age){
+    this.name = name
+    this.age = age
+}
+Person.prototype.sayHi = function(){
+    console.log('Hi ~')
+}
+var p1 = new Person('Mar', 18)
+var p2 = new Person('Marron', 19)
+console.log(p1.sayHi == p2.sayHi)  // true
+p1.sayHi()	// "Hi ~"
+```
+
+- 可见构造函数通过`Person.prototype`类似构造的所有对象是共享的(同一个内存空间)
+
+- javascript规定,每一个构造函数都有一个prototype属性,指向另一个对象.
+
+# Vue中原型链的使用
+
+在讨论Vue中原型链的使用之前,你需要理解[对象原型](https://blog.csdn.net/piano9425/article/details/104614697)
+
+## Vue 2.x 响应式原理
+
 
 

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      function func() {
+        console.log('原生功能')
+      }
+      let _tmpFn = func
+
+      func = function() {
+        console.log('啦啦啦,这是扩展的功能')
+        _tmpFn()
+      }
+      func()
+      func = _tmpFn
+      _tmpFn = null
+
+    </script>
+  </body>
+</html>

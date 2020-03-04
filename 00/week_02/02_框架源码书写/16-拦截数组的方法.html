@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <script>
+    let ARRAY_MEDHOD = [
+      'push',
+      'pop',
+      'shift',
+      'unshift',
+      'reverse',
+      'sort',
+      'splice'
+    ]
+    // 思路, 原型式继承: 修改原型链的结构
+    let arr = [];
+    // 继承关系: arr -> Array.prototype -> Object.prototype -> ...
+    // 继承关系: arr -> 改写的方法 -> Array.prototype -> Object.prototype -> ...
+
+    let array_methods = Object.create(Array.prototype)
+    // array_methods是一个空的对象,原型是Array.prototype
+
+    ARRAY_MEDHOD.forEach(method =>{
+      array_methods[method] = function(){
+        // 调用原来的方法
+        console.log(`调用的是拦截的${method}方法`)
+
+        // 将数据进行响应式化
+
+
+        return Array.prototype[method].apply(this, arguments)
+      }
+    })
+
+    arr.__proto__ = array_methods
+
+
+    // Vue的源码中,也做了判断
+    // Vue2.x 响应式缺陷. arr.length = 0, 则无法进行响应式
+  </script>
+</body>
+</html>

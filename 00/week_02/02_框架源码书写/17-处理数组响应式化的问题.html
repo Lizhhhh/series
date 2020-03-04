@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      let data = {
+        name: '张三',
+        age: 19,
+        course: [{ name: '语文' }, { name: '数学' }, { name: '英语' }]
+      }
+
+      let ARRAY_MEDHOD = ['push', 'pop', 'shift', 'unshift', 'reverse', 'sort', 'splice']
+      // 思路, 原型式继承: 修改原型链的结构
+      let array_methods = Object.create(Array.prototype)
+      // array_methods是一个空的对象,原型是Array.prototype
+      ARRAY_MEDHOD.forEach(method => {
+        array_methods[method] = function() {
+          // 调用原来的方法
+          console.log(`调用的是拦截的${method}方法`)
+
+          for(let i = 0, len = arguments.length; i< len; i++){
+            reactify(arguments[i])
+          }
+
+          // 将数据进行响应式化
+
+          return Array.prototype[method].apply(this, arguments)
+        }
+      })
+
+      function defineReactive(target, key, value, enumerable) {
+        if (typeof value == 'object' && value !== null && !Array.isArray(value)) {
+          // 非数组的引用类型
+          reactify(value)
+        }
+
+        Object.defineProperty(target, key, {
+          configurable: true,
+          enumerable: !!enumerable,
+
+          get() {
+            console.log(`读取o的${key}属性`)
+            return value
+          },
+          set(newVal) {
+            console.log(`设置o的${key}属性为${newVal}`)
+            reactify(target)
+            value = newVal
+          }
+        })
+      }
+
+      // 将对象o响应式化
+      function reactify(o) {
+        Object.keys(o).forEach(k => {
+          let value = o[k]
+          if (Array.isArray(value)) {
+            // 数组
+            value.__proto__ = array_methods   // 数组就可以响应式了
+            value.forEach(val => {
+              reactify(val)
+            })
+          } else {
+            defineReactive(o, k, value, true)
+          }
+        })
+      }
+      reactify(data)
+    </script>
+  </body>
+</html>
+
+

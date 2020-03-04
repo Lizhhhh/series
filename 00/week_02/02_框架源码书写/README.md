@@ -859,7 +859,7 @@ Vue的初始化,是从`new Vue`开始的,以下的图中可以知道在`new Vue`
 
 ```js
 function Vue(options){
-    let elm = document.querySelector()
+    let elm = document.querySelector(options.el)
     this._data = options.data
     this._template = elm
     this._parent = elm.parentNode
@@ -1325,37 +1325,41 @@ let data = {
         {name: 'express'}
     ]
 }
-function defineReactive (target, key, value, enumerable){
-    if(typeof value =='obj' && value !== null && !Array.isArray(value)){
-        // 非数组的对象
-        reactify(value)
+
+function defineReactive(target, key, value, enumerable) {
+  if (typeof value == 'object' && value !== null && !Array.isArray(value)) {
+    // 非数组的引用类型
+    reactify(value)
+  }
+
+  Object.defineProperty(target, key, {
+    configurable: true,
+    enumerable: !!enumerable,
+
+    get() {
+      console.log(`读取${key}属性`)
+      return value
+    },
+    set(newVal) {
+      console.log(`设置${key}属性为${newVal}`)
+      value = newVal
     }
-    // 到这里直接响应式化
-    Object.defineProperty(target, key, {
-        configrable: true,
-        enumerable: !!enumerable,
-        get(){
-            console.log(`读取${key}属性`)
-            return value
-        },
-        set(newVal){
-            console.log(`设置${key}属性为${newVal}`)
-            value = newVal
-        }
-    })
+  })
 }
 
-function reactify(o){
-    Object.keys(o).forEach(k=>{
-        if(Array.isArray(k)){
-            k.forEach(val =>{
-                reactify(val)
-            })
-        } else {
-            // 非数数组类型
-            defineReactive(o, k, o[k], true)
-        }
-    })
+// 将对象o响应式化
+function reactify(o) {
+  Object.keys(o).forEach(k => {
+    let value = o[k]
+    if (Array.isArray(value)) {
+      // 数组
+      value.forEach(val => {
+        reactify(val)
+      })
+    } else {
+      defineReactive(o, k, value, true)
+    }
+  })
 }
 reactify(data)
 ```
@@ -1367,17 +1371,15 @@ reactify(data)
 问题: 在上述实现的响应式化中,如果使用元素的数组方法`push`.则新加入的数据并不会是响应式的.
 
 ```js'
-data.mark.push({name: 'linux'})
+data.mark.push({name: 'linux'})	
 ```
-
->  Vue在源码中处理了`push、pop、shift、unshift、reverse、sort、splice`,下面只实现`push和pop`
 
 需要实现如下:
 
 - 在改变数组数据的时候发出通知
   - 注意在Vue2.x中: 设置数组的length并未做对应的处理(Vue 3.0中使用Proxy的语法解决了这个问题)
 
->tips: 如果一个函数已经定义了,且我们需要扩展其功能,我们一般的处理办法:
+>tips: 如果一个函数已经定义了,且我们需要扩展其功能,我们一般的处理办法(函数拦截)
 >
 >1. 使用一个临时的函数名来存储函数
 >2. 重新定义原来的函数
@@ -1385,15 +1387,105 @@ data.mark.push({name: 'linux'})
 >4. 调用临时的那个函数
 
 ```js
+function fn(){
+    console.log('原生功能')
+}
+let _tmpFn = fn
+fn = function(){
+    console.log('这里是扩展功能')
+    _tmpFn()
+}
+fn()
+fn = _tmpFn
+_tmpFn = null
+```
+
+> 下面扩展数组的方法: 修改要进行响应式化的数组的原型`__proto__`
+
+```js
+let data = {
+  name: '张三',
+  age: 19,
+  course: [{ name: '语文' }, { name: '数学' }, { name: '英语' }]
+}
+
+let ARRAY_MEDHOD = ['push', 'pop', 'shift', 'unshift', 'reverse', 'sort', 'splice']
+// 思路, 原型式继承: 修改原型链的结构
+let array_methods = Object.create(Array.prototype)
+// array_methods是一个空的对象,原型是Array.prototype
+ARRAY_MEDHOD.forEach(method => {
+  array_methods[method] = function() {
+    // 调用原来的方法
+    console.log(`调用的是拦截的${method}方法`)
+
+    for(let i = 0, len = arguments.length; i< len; i++){
+      reactify(arguments[i])
+    }
+
+    // 将数据进行响应式化
+
+    return Array.prototype[method].apply(this, arguments)
+  }
+})
+
+function defineReactive(target, key, value, enumerable) {
+  if (typeof value == 'object' && value !== null && !Array.isArray(value)) {
+    // 非数组的引用类型
+    reactify(value)
+  }
+
+  Object.defineProperty(target, key, {
+    configurable: true,
+    enumerable: !!enumerable,
+
+    get() {
+      console.log(`读取o的${key}属性`)
+      return value
+    },
+    set(newVal) {
+      console.log(`设置o的${key}属性为${newVal}`)
+      value = newVal
+    }
+  })
+}
+
+// 将对象o响应式化
+function reactify(o) {
+  Object.keys(o).forEach(k => {
+    let value = o[k]
+    if (Array.isArray(value)) {
+      // 数组
+      value.__proto__ = array_methods   // 数组就可以响应式了
+      value.forEach(val => {
+        reactify(val)
+      })
+    } else {
+      defineReactive(o, k, value, true)
+    }
+  })
+}
+reactify(data)
+```
+
+## 改变对象属性的处理
+
+以上已经将对象处理成响应式的了,但是如果给对象重写赋值,则不会是响应式
+
+```js
+// 例如上面的栗子
+
 
 ```
 
+## 响应式流程梳理
+
+梳理响应式的流程
+
+# Vue初始化(给数据添加响应式)
 
 
- 
 
-- 加入的元素,应该变成响应式
-  - 
+
 
 
 
