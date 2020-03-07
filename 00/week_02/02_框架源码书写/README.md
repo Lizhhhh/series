@@ -1472,20 +1472,206 @@ reactify(data)
 以上已经将对象处理成响应式的了,但是如果给对象重写赋值,则不会是响应式
 
 ```js
-// 例如上面的栗子
-
+// 例如上面的栗子, 只需在给对象赋值的时候, 将赋值的对象变为响应式即可
+function defineReactive(target, key,value, enumerable){
+    let that = this
+    if(typeof value ==='object' && value !== null && !Array.isArray(value)){
+        reactify(value)
+    }
+    Object.defineProperty(target, key, {
+        configurable: true,
+        enumerabl: !!enumerable,
+        get(){
+            console.log(`读取${key}属性`)
+            return value
+        },
+        set(newVal){
+            console.log(`设置${key}属性为${newVal}`)
+            value = reactify(newVal)
+            that.mountComponent()
+        }
+    })
+}
 
 ```
 
-## 响应式流程梳理
+# Vue流程梳理(带数据添加响应式)
 
-梳理响应式的流程
+梳理的过程包括:
 
-# Vue初始化(给数据添加响应式)
+```mermaid
+graph LR
+	1(Vue的初始化)
+	2(mount)
+	3(reactify)
+	21(createRenderFn)
+	22(mountComponent)
+	1 --> 2
+	1 --> 3
+	2 --> 21
+	2 --> 22
+	22 --> 根据AST和数据渲染更新页面
+	21 --> 将真实DOM解析为一棵抽象语法树
+```
 
 
 
+【响应式的原理】
+
+在初始化的过程中,会使用reactify对数据的进行[响应式化](https://blog.csdn.net/piano9425/article/details/104628990).当数据发生改变时,会调用mountComponent()函数. 后面会使用观察者模式使用notify更新.[整体代码]([https://github.com/Lizhhhh/series/blob/master/00/week_02/02_%E6%A1%86%E6%9E%B6%E6%BA%90%E7%A0%81%E4%B9%A6%E5%86%99/18-Vue-Reactive.html](https://github.com/Lizhhhh/series/blob/master/00/week_02/02_框架源码书写/18-Vue-Reactive.html))
 
 
 
+# 发布订阅模式
+
+## 代理方法
+
+作用: 将app._data中的成员映射到app上. 
+
+```js
+// 原本访问
+app._data.name
+// 映射后访问
+app.name
+```
+
+由于需要在更新数据的时候,视图也随之改变: `app._data.name`和`app.name`访问的是同一个成员
+
+由于`app._data`已经是响应式的对象了,所以只需让app访问的成员去访问`app._data`对应的成员就可以了
+
+```js
+// app.name 转换为 app._data.name
+// app.xxx 转换为 app._data.xxx
+// 在vue中引人入了一个函数proxy(target, src, prop). 将target的操作,映射到src.prop上.
+```
+
+我们之前使用的reacify方法已经不行了,我们需要一个新的方法来处理.
+
+需要一个Observer方法(Vue源码提供),在方法中对属性进行处理.可以将这个方法封装到initData方法中.
+
+```js
+function Vue(options){
+    this._data = options.data
+    
+    let elm = document.querySelector(options.el)
+    this._template = elm
+    this._parent = elm.parentNode
+    
+    this.initData()
+    this.mount()
+}
+```
+
+下面重写initData的方法.思路:
+
+1. 在initData中首先需要就是将数据响应式化
+   - 这一点可以使用上面的reactify进行实现
+2. 需要代理浅层次的data属性
+
+```js
+Vue.prototype.initData = function (){
+    let keys = Object.keys(this._data)
+    
+    for(let i=0, len = keys.length; i < len; i++){
+	    // 响应式化
+        reactify(this._data, this)
+        // 代理
+        proxy(this, '_data', keys[i])
+    }
+}
+
+function reactify(o, vm){
+    Object.keys(o).forEach(k =>{
+        let value = o[k]
+        if(Array.isArray(value)){
+            value.__proto__ = array_methods	// 让数组的push、pop等方法变为响应式
+            value.forEach(val=>{
+                reactify(val, vm)
+            })
+        } else {
+            defineReactify.call(vm, o, k, valu, true)
+        }
+    })
+}
+function proxy(target, prop, key){
+    Object.defineProperty(target, key, {
+        configurable: true,
+        enumerable: true,
+        get(){
+            return target[prop][key]
+        },
+        set(newVal){
+            target[prop][key] = newVal
+        }
+    })
+}
+```
+
+【proxy说明】
+
+- 在未使用proxy之前,在访问vue实例的私有属性时,需要使用app._data.props
+- 但是根据vue的设计,不希望访问 带有 _ 的属性
+- vue中: $开头的数据是只读的. 不建议对其进行修改
+
+重点在于: `访问app.xxx`就是在访问`app._data.xxx`
+
+```js
+// 假设现有对象如下
+var o1 = { name: '张三' }
+var o2 = {}
+// 现在需要在访问o2.name时,实际上是在访问o1.name
+Object.defineProperty(o2, 'name',{
+    configurable: true,
+    enumerable: true,
+    get(){
+        return o1.name
+    },
+    set(newVal){
+        o1.name = newVal
+    }
+})
+```
+
+现在需要访问app的xxx就是在访问 app._data.xxx
+
+```js
+const app = new Vue({
+    el:'#app',
+    data: {
+        name: '张三',
+        age: 18
+    }
+})
+
+function Vue(options){
+    this._data = options.data
+    
+    this.initData()
+}
+
+Vue.prototype.initData = function(){
+    Object.keys(this._data).forEach(key=>{		// name, age
+        proxy(this, '_data', key)
+    })
+}
+
+function proxy(target, prop, key){
+    Object.defineProperty(target, key, {
+        configurable: true,
+        enumerable: true,
+        get(){
+            return target[prop][key]
+        },
+        set(newVal){
+            target[prop][key] = newVal
+        }
+    })
+}
+```
+
+## 事件模型
+
+- 借助node中的event模块(标准的事件模型)
+
+- vue 中 Observer 、 Watcher 和 Dep三者之间的关系
 

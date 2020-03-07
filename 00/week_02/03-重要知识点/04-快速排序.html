@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      /*
+        1. 每次选择当前的数组作为标准数组
+        2. 比当前数组大的元素放在右边,比当前数组小的放在左边
+      */
+      function qSort(arr) {
+        if (arr.length == 0) return []
+        let pivot = arr[0],
+          left = [],
+          right = []
+        for (let i = 1, len = arr.length; i < len; i++) {
+          if (arr[i] < pivot) {
+            left.push(arr[i])
+          } else {
+            right.push(arr[i])
+          }
+        }
+        return qSort(left).concat(pivot, qSort(right))
+      }
+
+      let arr = [3, 44, 38, 5, 47, 15, 36, 26, 27, 2, 46, 4, 19, 50, 48]
+      console.log(qSort(arr))
+    </script>
+  </body>
+</html>

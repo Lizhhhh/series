@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      var combinationSum = function(candidates, target) {
+        let len = candidates.length,
+          res = []
+        path = []
+        candidates.sort((a, b) => a - b)
+
+        function dfs(resides, path, begin) {
+          if (resides < 0) return
+          if (resides == 0) {
+            res.push(path.slice())
+            return
+          }
+          for (let i = begin; i < len; i++) {
+            if (resides - candidates[i] < 0) break
+            path.push(candidates[i])
+            dfs(resides - candidates[i], path, i)
+            // 回溯
+            path.pop()
+          }
+        }
+        dfs(target, path, 0)
+        return res
+      }
+
+      console.log(combinationSum([8, 7, 4, 3], 11))
+    </script>
+  </body>
+</html>

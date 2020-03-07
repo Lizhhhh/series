@@ -643,14 +643,531 @@ p1.sayHi()	// "Hi ~"
 ```
 
 - 可见构造函数通过`Person.prototype`类似构造的所有对象是共享的(同一个内存空间)
-
 - javascript规定,每一个构造函数都有一个prototype属性,指向另一个对象.
 
-# Vue中原型链的使用
+# this指向
 
-在讨论Vue中原型链的使用之前,你需要理解[对象原型](https://blog.csdn.net/piano9425/article/details/104614697)
+[参考 - MDN](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Operators/this)
 
-## Vue 2.x 响应式原理
+与其他语言相比,<b>函数的this关键字</b>在JavaScript中的表现略有不同,此外,在[严格模式](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Strict_mode)和非严格模式之间也会有一些差别.
 
 
+
+在绝大多数情况下,函数的调用方式决定了`this`的值.`this`不能在执行期间被赋值,并且在每次函数被调用时`this`的值也可能会不同。ES5引入了[bind](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Function/bind)方法来设置函数的`this`值,而不用考虑函数如何被调用的,ES2015引入了支持`this`词法解析的箭头函数(它在闭合的执行环境内设置`this`的值)
+
+
+
+## 全局环境
+
+无论是否在严格模式下,在全局执行环境中, `this`都会指向全局对象
+
+```js
+console.log(this === window)
+
+a = 37
+console.log(window.a)
+
+this.b = 'MDN'
+console.log(window.b)
+cosnole.log(b)
+```
+
+## 函数(运行内)环境
+
+在函数内部,`this`的值取决于函数被调用的方式
+
+```js
+function f1(){
+    return this
+}
+f1() === window		// 浏览器中,全局对象是window
+
+f1() === global		// Node环境中,全局对象是global
+```
+
+在严格模式下,`this`将保持他进入执行环境时的值,所以下面的this将会默认为`undefined`
+
+```js
+function f2(){
+    "use strict"
+    return this;
+}
+f2() === undefined; 	//true
+```
+
+> 在严格模式下,如果this没有被执行环境定义,那它将保持undefined
+
+如果想要把`this`的值从一个环境传到另一个,就要用`call`或者`apply`方法
+
+```js
+// 将一个对象作为call和apply的第一个参数,this会被绑定到这个对象
+var obj = { a: 'Custom' };
+
+var a = 'Global'
+
+function whatsThis(arg){
+    return this.a
+}
+
+whatsThis();	// "Global"
+whatsThis.call(obj);  // "Custom"
+whatsThis.apply(obj);	// "Custom"
+```
+
+当一个函数在其主体中使用`this`关键字时,可以通过函数继承自`Function.prototype`的`call`和`apply`方法将`this`值绑定到调用中的特定对象
+
+```js
+function add(c, d) {
+    return this.a + this.b  + c + d
+}
+var o = {a: 1, b: 3}
+add.call(o, 5 ,7)
+
+app.apply(o, [10, 20])
+```
+
+## bind方法
+
+ECAMScript5引入了Function.prototype.bind.调用`f.bind(someObject)`会创建一个与f具有相同函数体和作用域的函数,但是在这个新函数中,this将永久地被绑定到了`bind`的第一个参数,无论这个函数是如何被调用的
+
+```js
+function f(){
+    return this.a
+}
+var g = f.bind({a: 'azerty'})
+console.log(g())	// "azerty"
+
+var h = g.bind({a: 'yoo'})	// bind只生效一次
+console.log(h())	// azerty
+
+var o = {a:37, f:f, g:g, h:h}
+console.log(o.f(), o.g(), o.h())	// 37, azerty, azerty
+```
+
+
+
+## 箭头函数中的this
+
+在箭头函数中,this与封闭词法环境的this保持一致。在全局代码中,它将被设置为全局对象
+
+```js
+var globalObject = this;
+var foo = (() => this)
+console.log(foo() === globalObject)		// true
+```
+
+> 注意: 如果将this传递给call、back或者apply,它将被忽略。不过你仍然可以为调用添加参数,不过第一个参数应该设置为null
+
+```js
+var globalObject = this;
+var foo = (()=> this)
+console.log(foo() === globalObject)
+
+var obj = { foo: foo}
+console.log(obj.foo() === globalObject)		// true
+
+console.log(foo.call(obj) === globalObject)		// true
+
+foo = foo.bind(obj)
+console.log(foo() === globalObject)
+```
+
+无论如何,foo的this被设置为他被创建时的环境(在上面的例子中,就是全局对象).这样同样适用于在其他函数内创建的箭头函数: 这些箭头函数的this被设置为封闭的词法环境
+
+```js
+var obj = {
+    bar: function(){
+        var x = (()=> this)
+        return x
+    }
+}
+
+var fn = obj.bar()
+
+console.log(fn() === obj)  // true
+
+var fn2 = obj.bar
+
+console.log(f2()() === window)	
+```
+
+# 手写promise
+
+一种异步的解决方案, [参考](https://www.jianshu.com/p/c633a22f9e8c)
+
+## Promise代码基本结构
+
+```js
+function Promise(executor){
+    this.state = 'pending';
+    this.value = undefined;
+    this.reason = undefined;
+    
+    function resolve(){
+        
+    }
+    
+    function reject(){
+        
+    }
+}
+module.exports = Promise
+```
+
+state保存的是当前的状态,在Promise状态发展只有以下两种模式且不可逆:
+
+```mermaid
+graph LR
+	1(pending - 等待态)
+	2(resolved - 成功态)
+	3(rejected - 失败态)
+	1 --> 2
+	1 --> 3
+```
+
+从上可知,状态只能由`pending变为resolved`(执行resolve)或`pending变为rejected`(执行reject)
+
+这就引出了resolve和reject的功能
+
+```js
+function Promise(executor){
+    this.state = 'pending'
+    this.value = undefined
+    this.reason = undefined
+    
+    function resolve(value){
+        this.state = 'resolved'
+        this.value = value
+    }
+    
+    function reject(reason){
+        this.state = 'rejected'
+        this.reason = reason
+    }
+    
+    executor(resove, reject)
+}
+```
+
+## then方法的实现
+
+当Promise的状态发生了改变,不论是成功或是失败都会调用then方法
+
+```js
+let p = new Promise((resolve, reject)=>{
+    setTimeout(()=>{
+        resolve(1)
+    },50)
+})
+p.then(data=>{console.log(data)})
+```
+
+可以得出then的方法,由于then方法是每个实例所以共有,因此可以将其写在原型链上:
+
+- 接受2个参数,成功的回调`onFulfilled`和`onRejected`
+  - 两个函数分别在`resolved`状态下和`rejected`状态下执行
+
+```js
+Promise.prototype.then = function(onFulfilled, onRejected){
+    if(this.state === 'resolved'){
+        onFulfilled(this.value)
+    }
+    if(this.state === 'rejected'){
+        onRejected(this.reason)
+    }
+}
+```
+
+当你写出了以上的代码,在同步的情况下执行完全没有问题. 但是在异步的情况下,流程如下:
+
+- 函数执行`new Promise`,当遇到`setTimeout`时,会将其推入一个异步队列中
+- 然后执行p.then: 浏览器会顺着原型链找到`Promise.prototype.then`发现此时的状态是`pending`,故不做任何处理,结束同步处理
+- 开始执行异步队列里面的`setTimeout`,执行`resovle(1)`.
+
+## 异步方法的实现
+
+处理异步方法的关键是,在`Promise.prototype.then`方法中,当状态为`pending`时,可以将处理函数作为变量存储起来,这样当异步过后,执行`resolve`时,可以在内存中找到相应的处理函数并对其进行执行.
+
+这就需要我们修改Promise构造函数
+
+```js
+function Promise(exector){
+    this.state = 'pending'
+    this.value = undefined
+    this.reason = undefined
+    this.onResolvedCallbacks = []	// 用于存储成功的回调
+    this.onRejectedCallbacks = []	// 用于存储失败的回调
+    
+    function resolve(value){
+        if(this.state === 'pending'){
+            this.state = 'resolved'
+            this.value = value
+            this.onResolvedCallbacks.forEach(resolved=> resolved(value))
+        }
+    }
+    function reject(reason){
+        if(this.state === 'pending'){
+            this.state = 'rejected'
+            this.reason = reason
+            this.onRejectedCallbacks.forEach(rejected=> rejected(reason))
+        }
+    }
+}
+
+// 修改 Promise.prototype.then
+Promise.prototype.then = function (onFulfilled, onRejected){
+    if(this.state === 'resolved'){
+        onFulFilled(this.value)
+    }
+    if(this.state === 'rejected'){
+        onRejected(this.reason)
+    }
+    // 异步: 将回调函数放入内存中.
+    if(this.state === 'pending'){ 
+        if(typeof onFulfilled === 'function'){
+            this.onResolvedCallbacks.push(onFulfilled)
+        }
+        if(typeof onRejected  === 'function'){
+            this.onRejectedCallbacks.push(onRejected)
+        }
+    }
+}
+```
+
+> 当涉及到异步,使用this时要绝对小心
+
+在使用setTimeout,里面回调使用的函数中的this是指向window的(通过debugger调试可以获得).这就需要在一开始时,将指向实例的this保存下来.
+
+```js
+function Promise(exector){
+    let _this = this
+    _this.state = 'pending'
+    _this.value = undefined
+    _this.reason = undefined
+    _this.onResovledCallbacks = []
+    _this.onRejectedCallbacks = []
+    
+    function resolve(value){
+        _this.state = 'resolved'
+        _this.value = value
+        _this.onResolvedCallbacks.forEach(resolved => resolved(value))
+    }
+    function reject(reason){
+        _this.state = 'rejected'
+        _this.reason = reason
+        _this.onRejectedCallbacks.forEach(rejected=> rejected(reason))
+    }
+    exector(resolve, reject)
+}
+Promise.prototype.then = function(onFulfilled, onRejected){
+    if(this.state === 'resolved'){
+        onFulfilled(this.value)
+    }
+    if(this.state === 'rejected'){
+        onRejected(this.reason)
+    }
+    if(this.state === 'pending'){
+        if(typeof onFulfilled === 'function'){
+            this.onResolvedCallbacks.push(onFulfilled)
+        }
+        if(typeof onRejected === 'function'){
+            this.onRejectedCallbacks.push(onRejected)
+        }
+    }
+}
+```
+
+# 快排
+
+思路: 将每次的第一个元素作为基准,将比基准小的放在left数组中,比基准大的放在right数组中.然后返回[left, pivot,right]
+
+```js
+function qSort(arr){
+    let pivot,left = [],right = []
+    function loop(arr){
+        pivot = arr[0]
+        left = []
+        right = []
+        for(let i=0, len = arr.length; i < len; i++){
+            if(arr[i] > pivot){
+                right.push(arr[i])
+            } else{
+                left.push(arr[i])
+            }
+        }
+        return loop(left).concat(pivot, loop(right))
+    }
+    return loop(arr)
+}
+```
+
+# 冒泡排序
+
+思路:
+
+- 记录待排序的数组长度 len
+- 当len大于0时,会进入循环
+  - 会使用nextLen保存下次循环的长度.(为undefined会跳出循环)
+  - 每次循环都从第0号位开始,最后到len.
+  - 比较左右2边的元素
+    - 左 > 右: 则交换左右两边的位置,并将nextLen置为当前的下标
+  - 每次到循环结束,都会将len设为nextLen
+
+```js
+function bubbleSort(arr){
+    let len = arr.length;
+    while(len > 0){
+        let tmp,nextLen
+        for(let i =0 ; i< len; i++){
+            if(arr[i]>arr[i+1]){
+                tmp = arr[i]
+                arr[i] = arr[i+1]
+                arr[i+1] = tmp
+                nextLen = i
+            }
+            len = nextLen
+        }
+    }
+    return arr
+}
+```
+
+# 单例模式实现 发布/订阅 模式
+
+- 单例模式即只有一个实例
+
+- 发布订阅模式,即使用`addDep`添加依赖.使用`notify`
+
+```js
+class Observer{
+	constructor(){
+        this.events ={}
+    }
+    
+	addDep(tag, handler){
+        if(Array.isArray(this.events[tag])){
+            // 是一个数组
+            this.events[tag].push(handler)
+        }else{
+            this.events[tag] = [handler]
+        }
+    }
+    
+    notify(tag, params){
+        this.events[tag].forEach(fn => fn(params))
+    }
+}
+```
+
+以上实现了一个简单的观察者模式,下面使用单例模式对其进行改造.
+
+简单的说就是在使用`new Observer`时,返回的是同一个实例.给构造函数添加一个获取单例的方法
+
+```js
+class Observer{
+    constructor(){
+        this.events = {}
+        this.instance = null
+    }
+}
+Observetr.getInstance = function (){
+    if(this.instance == null){
+        this.instance = new Observer
+    }
+    return this.instance
+}
+
+let o1 = Observetr.getInstance()
+let o2 = Observetr.getInstance()
+console.log(o1 === o2)		// true
+```
+
+
+
+# 回溯法
+
+[参考 - 剑指Offer](https://detail.tmall.com/item.htm?id=548092981894&ali_refid=a3_430583_1006:1103241722:N:HiAgHJHf19eAlJ6gWxZpnfjGlndijUZf:a1d726725481a48865a76287085ac529&ali_trackid=1_a1d726725481a48865a76287085ac529&spm=a230r.1.14.1)
+
+回溯法可以看成蛮力法的升级版,它从解决问题每一步的所有可能选项里系统地选择出一个可行的解决方案.
+
+回溯法解决的问题的特性:
+
+- 可以形象地用树状结构表示:
+  - 节点: 算法中的每一个步骤
+  - 节点之间的连接线: 每个步骤中的选项,通过每一天连接线,可以到达下一个子步骤
+  - 叶子节点: 代表一个步骤的最终状态
+- 如果在叶节点的状态满足需求,那么我们找到了一个可行的解决方案
+
+- 如果在叶节点的状态不满足约束条件,那么只好回溯到它的上一个节点再尝试其他的选项。如果上一个节点所有可能的选项都已经试过,并且不能达到满足约束条件的终结状态,则再次回溯到上一个节点.如果所有节点的所有选项都已经尝试过仍然不能达到满足约束条件的终结状态,该问题无解
+
+
+
+## 栗子 - 数组总和
+
+[题目参考 - 39.数组总和](https://leetcode-cn.com/problems/combination-sum/)
+
+算法思路:
+
+- 变量:
+  - 使用len缓存当前数组的长度
+  - 使用path缓存当前的路径
+  - 使用res缓存要返回的结果
+- 处理:
+  - 为了方便后续的剪枝操作,需先对数组进行排序
+- 使用深度优先算法,传入3个参数: resides(离目标还差多少), path, begin(从哪一个开始添加)
+  - 每次进入时,判断一下,resides是否小于0:
+    - 是: return
+    - 否: 不做处理
+  - 之后判断resides是否等于0
+    - 是: 证明找到一个条符合要求的路径,将path推入res中(此处需特别注意,数组是JS中的引用类型.在后文中会回溯,最终的path是一个空数组. 如果直接将path推入res.其实是将path的内存地址推入res.最终会根据地址寻找到空数组.因此此处推入的是path.slice()). [slice方法参考](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Array/slice) 
+    - 否: 不做处理
+  - 到这里,循环遍历candidates数组
+    - 每次将当前的值推入路径
+    - 然后调用dfs函数
+    - dfs函数结束之后,要进行回溯操作,即将对path使用pop()方法
+
+```js
+var combinationSum = function(candidates, target){
+    let len = candidates.length,
+        path = [],
+        res = []
+    candidates.sort((a,b)=>a-b)
+    function dfs(resides, path, begin){
+        if(resides < 0) return
+        if(resides == 0) return res.push(path.slice())	// 此处需要返回一个新的数组,不能使用同一个内存中的数组
+        for(let i = begin; i < len ; i++){
+            if(resides - candidates[i] < 0) break;
+            path.push(candidates[i])
+            dfs(resides - candidates[i], path, i)
+            path.pop()
+        }
+    }
+    
+    dfs(target, path, 0)
+    return res
+        
+}
+```
+
+# 栗子 - 数组总和II
+
+[题目描述](https://leetcode-cn.com/problems/combination-sum-ii/)
+
+
+
+
+
+
+
+# 树
+
+# 无限级目录递归实现
+
+# 节流与防抖
+
+# 瀑布流
+
+# Webpack中loader与plugins的区别
+
+# nodeJS的事件循环
 

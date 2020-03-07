@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      class Observer {
+        constructor() {
+          this.events = {}
+          this.instance = null
+        }
+
+        addDep(tag, handler) {
+          if (Array.isArray(this.events[tag])) {
+            // 是一个数组
+            this.events[tag].push(handler)
+          } else {
+            this.events[tag] = [handler]
+          }
+        }
+
+        notify(tag, params) {
+          this.events[tag].forEach(fn => fn(params))
+        }
+      }
+
+      Observer.getInstance = function() {
+        if (this.instance == null) {
+          this.instance = new Observer()
+        }
+        return this.instance
+      }
+      let o1 = Observer.getInstance()
+      let o2 = Observer.getInstance()
+      o1.addDep('h1', function(data) {
+        console.log(data)
+      })
+      o1.notify('h1')
+      console.log(o1 === o2)
+    </script>
+  </body>
+</html>

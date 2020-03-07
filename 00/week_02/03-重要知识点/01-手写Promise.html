@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      function Promise(exector) {
+        let _this = this
+        _this.state = 'pending'
+        _this.value = undefined
+        _this.reason = undefined
+        _this.onResolvedCallbacks = [] // 用于存储成功的回调
+        _this.onRejectedCallbacks = [] // 用于存储失败的回调
+
+        function resolve(value) {
+          if (_this.state === 'pending') {
+            _this.state = 'resolved'
+            _this.value = value
+            _this.onResolvedCallbacks.forEach(resolved => resolved(value))
+          }
+        }
+        function reject(reason) {
+          if (_this.state === 'pending') {
+            _this.state = 'rejected'
+            _this.reason = reason
+            _this.onRejectedCallbacks.forEach(rejected => rejected(reason))
+          }
+        }
+
+        try {
+          exector(resolve, reject)
+        } catch (e) {
+          reject(e)
+        }
+      }
+
+      // // 修改 Promise.prototype.then
+      // Promise.prototype.then = function(onFulfilled, onRejected) {
+      //   if (this.state === 'resolved') {
+      //     onFulFilled(_this.value)
+      //   }
+      //   if (this.state === 'rejected') {
+      //     onRejected(_this.reason)
+      //   }
+      //   // 异步: 将回调函数放入内存中.
+      //   if (this.state === 'pending') {
+      //     if (typeof onFulfilled === 'function') {
+      //       this.onResolvedCallbacks.push(onFulfilled)
+      //     }
+      //     if (typeof onRejected === 'function') {
+      //       this.onRejectedCallbacks.push(onRejected)
+      //     }
+      //   }
+      // }
+
+      // 重写 Promise.prototype.then
+      Promise.prototype.then = function(onFulfilled, onRejected) {
+        let self = this,
+          promise2
+        // onFulfilled =
+        //   typeof onFulfilled === 'function'
+        //     ? onFulfilled
+        //     : function(val) {
+        //         return val
+        //       }
+        // onRejected =
+        //   typeof onRejected === 'function'
+        //     ? onRejected
+        //     : function(val) {
+        //         return val
+        //       }
+        if (this.state === 'resolved') {
+          promise2 = new Promise(function(resolve, reject) {
+            setTimeout(() => {
+              try {
+                let x = onFulfilled(self.value)
+                resolvePromise(promise2, x, resolve, reject)
+              } catch (err) {
+                reject(err)
+              }
+            }, 0)
+          })
+        }
+        if (this.state === 'rejected') {
+          promise2 = new Promise(function(resolve, reject) {
+            setTimeout(function() {
+              try {
+                let x = onRejected(self.reason)
+                resolvePromise(promise2, x, resolve, reject)
+              } catch (err) {
+                reject(err)
+              }
+            })
+          })
+        }
+        if (this.state === 'pending') {
+          promise2 = new Promise(function(resolve, reject) {
+            self.onResolvedCallbacks.push(function() {
+              // x 可能是一个promise,也可能是个普通值
+              setTimeout(function() {
+                try {
+                  // onFulfilled就是then中传入的参数
+                  let x = onFulfilled(self.value)
+                  resolvePromise(promise2, x, resolve, reject)
+                } catch (err) {
+                  reject(err)
+                }
+              })
+            })
+            self.onRejectedCallbacks.push(function() {
+              // x 可能是一个promise,也可能是个普通值
+              setTimeout(function() {
+                try {
+                  let x = onRejected(self.reason)
+                  resolvePromise(promise2, x, resolve, reject)
+                } catch (err) {
+                  reject(err)
+                }
+              })
+            })
+          })
+        }
+        return promise2
+      }
+
+      function resolvePromise(promise2, x, resolve, reject){
+
+      }
+
+
+
+      let p = new Promise((resolve, reject) => {
+        setTimeout(() => {
+          resolve(1)
+        }, 500)
+      })
+      p.then(data =>{
+        return 2
+      }).then(data => {
+        console.log(data)
+      })
+    </script>
+  </body>
+</html>
