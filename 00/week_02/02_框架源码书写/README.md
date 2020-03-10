@@ -1675,3 +1675,142 @@ function proxy(target, prop, key){
 
 - vue 中 Observer 、 Watcher 和 Dep三者之间的关系
 
+【目标】: 解耦、 **我们修改了某个属性,只更新该属性所在组件的虚拟DOM**
+
+现在的处理办法是,在属性更新的时候,调用mountComponent方法( AST + Data = VNode, 更新的是全部的页面 -> 当前虚拟DOM对应的页面DOM).
+
+在Vue中整个的更新,是以组件为单位来进行**判断**。以节点为点位进行更新的
+
+- 如果代码中无自定义组件,那么在进行diff算法的时候,会将全部模板的虚拟DOM进行比较
+- 如果,代码中含有自定义组件,那么在比较算法时,就会判断更新的是哪些组件中的属性,只会判断数据发送了变化的组件,其他组件不会更新.
+
+
+
+复杂的页面是由很多组件构成.每一个属性要更新的时候,都要去调用更新的方法.
+
+当我们的页面变得很复杂的时候,我们的页面由很多组件构成.每个组件都会维护自己的属性和状态.每一个组件都有一套自己的虚拟DOM比较的方法。在这种情况下,性能消耗就会比较多。我们的目标: 
+
+【发布订阅模式的使用】
+
+- 订阅事件`event.on('事件名', 处理函数)`
+- 移除事件:`event.off()`
+- 通知事件: `event.emit('事件名', '参数')`
+
+```js
+var event = (function(){
+    eventObjs = {}
+    return {
+        on: function(type, handler){
+            (eventObjs[type] || (eventObjs[type] = [])).push(handler)
+        },
+        off: function(type, handler){
+            let len = arguments.length
+            if(len == 0) {
+                eventObjs = {}
+            } else if(len == 1){
+                eventObjs[type] = []
+            } else if(len == 2){
+                let _events = eventObjs[type]
+                if(!_events) return
+                for(let i = _events.length - 1; i> 0; i--){
+                    if(_events[i] == handler){
+                        _events.splice(i, 1)
+                    }
+                }
+            }
+        },
+        emit: function(type){
+            let args = Array.prototype.slice(arguments, 1)
+            let _events = eventObjs[type]
+            if(!_events) return
+            for(let i =0, len = _events.length; i < len; i++){
+                _events[i].apply(null, args)
+            }
+        }
+    }
+})()
+```
+
+> 在JavaScript中:
+>
+>  - 基本类型是比较值
+>  - 引用类型是比较引用的地址
+>  - 基本类型与引用类型的比较: 是先将引用类型转换成基本类型在进行比较. 如果是 === , 则不转换比较
+>
+> 小栗子:
+>
+> [] == []  // false
+>
+> {} == {}  // false
+>
+> ( function(){}) == ( function(){})  // false 
+>
+> 原因: 在执行  [] == [] 会分配2个不同的空间给两个数组,比较的是两个数组的地址
+
+【发布订阅模式小结】: 
+
+1. 一定要有一个中间的全局的容器,用来存储可以被触发的东西(可以是函数,也可以是对象)
+2. 还需要一个方法,可以往容器中传入东西(函数, 对象).
+
+3. 还需要一个方法,可以将容器中的东西取出来**使用** (函数->函数的调用, 对象 -> 对象的方法调用)
+
+
+
+# Vue中 发布/订阅模式的实现
+
+## 简述
+
+1. Vue中是根据虚拟DOM生成真实DOM的(这样性能更高)
+2. Vue采用组件化的思想,将各个页面看作不同的组件
+3. 每个组件都有着对应的数据,每个数据对应一个watcher
+4. 当读取数据的时候,会调用depend方法,将对应组件的数据存入全局的Watcher中(依赖收集)
+5. 对数据进行设置的时候,会调用notify方法.触发全局Watcher中对应的事件处理函数 (派发更新)
+
+【为什么这样处理】:
+
+- Vue中页面的更新(diff算法)是以组件为单位的,当组件中的数据发送变化时,会更新对应的组件
+
+- 如果页面中只有一个组件(vue实例), 不会有性能损失
+- 但是,如果页面中有多个组件(多 watcher 的一种情况),第一次会有多个组件的watcher存入到全局watcher中
+  - 例如修改了其中一个组件的数据,表示只会对该组件进行diff算法
+  - 只会访问该组件的watcher
+  -  再次往全局存储的只有该组件的watcher
+  - 页面更新的时候,也就只需要更新一部分
+
+## rollup
+
+使用`<script src="./src/vnode.js"></script>`之类`script`标签引入js文件时,需要明确知道js文件的执行顺序.使用rollup帮助构建,不需要管理js的加载顺序
+
+
+
+## 改写observe函数
+
+- 缺陷: 
+  - 无法处理数组
+  - 响应式无法在中间集成对应的 watcher 处理
+  - 我们实现的 reactify 需要和实例仅仅的绑定在一起, 使用 发布/订阅模式 (分离/解耦)
+
+```js
+
+```
+
+
+
+## 引入 Watcher
+
+思路:
+
+- 数据发生变化的时候,会通知watcher进行对应的刷新
+- 当访问数据的时候, 通知全局watcher来保存我们的watcher
+
+实现:
+
+- 只考虑修改后刷新(响应式核心算法)
+  - 在Vue中提供一个构造函数 Watcher,它会提供以下方法
+    - `get()`: 用来进行**计算**或**执行处理函数**
+    - `update()`: 公共的外部方法, 该方法会触发内部的run方法
+    - `run()`: 用来判断内部是使用异步运行还是同步运行等
+
+
+
+- 再考虑依赖收集(优化,提高性能)

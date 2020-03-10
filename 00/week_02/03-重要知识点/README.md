@@ -1144,20 +1144,230 @@ var combinationSum = function(candidates, target){
     }
     
     dfs(target, path, 0)
-    return res
-        
+    return res       
 }
 ```
 
-# 栗子 - 数组总和II
+> 注意: res.push(path)时,由于path是个引用类型.因此实际上push进的是一个十六进制地址.可以看做下面:
+>
+> res[0] = '0xffffffff'
+>
+> 当后面回溯path.pop()时, 内存0xffffffff中的值会改变. 
+>
+> 最后一次回溯 内存0xffffffff中的值为 []
+>
+> 因此 res[0] = []
+>
+> 而我们需要得到的是res[0] =  [a,b,c] 这样的结构。 因此我们每次在push时,需要重新生成一个数组传入,即使用path.slice()	
+
+## 栗子 - 数组总和II
 
 [题目描述](https://leetcode-cn.com/problems/combination-sum-ii/)
 
+算法思路:
+
+以传入参数`combinationSum2([10, 1, 2, 7, 6, 1, 5], 8)`为栗子进行说明:先将传入的数组candidates进行升序排列, 即candidates = [1,1,2,5,6,7,10], 采用树的深度优先遍历.
+
+- resides: 离target =8 , 差多少
+- candicates: 当前的用于操作的候选数组
+- path: 当前的路径
+- res: 最终返回的结构
+
+当resides < 0时, 直接退出当前
+
+当resides ===0 时,代表 path中的数组满足条件. 将path推入res中 `res.push(path.slice())`
+
+当resides > 0 时, 遍历candidates数组:
+
+- 每次判断 resides - candidates[i] 是否大于0 , 若小于0则进行剪枝(退出当前循环)
+- 同时要考虑[1,2, 5] 和 [1,7]的情况.因为原数组中有2个1, 只需第一个1即可. `if(candidate[i] !== candidate[i-1])`
+
+- 到这里就是正常的递归回溯工作了:
+  - 每次将 candidates[i]推入path中.
+  - 然后调用 dfs()递归
+  - 出来回溯. path.pop()
+
+
+
+```js
+var combinationSum2 = function(candidates, target) {
+  candidates.sort((a, b) => a - b)
+  var res = []
+
+  function dfs(resides, candidates, path) {
+    if (resides < 0) return
+    if (resides === 0) res.push(path.slice())
+    for (let i = 0, len = candidates.length; i < len; i++) {
+      if (candidates[i] !== candidates[i - 1]) {
+        if (resides - candidates[i] < 0) break
+        path.push(candidates[i])
+        dfs(resides - candidates[i], candidates.slice(i + 1), path)
+        path.pop()
+      }
+    }
+  }
+  dfs(target, candidates, [])
+  return res
+}
+```
+
+## 栗子 -  组合总和 III
+
+[题目参考](https://leetcode-cn.com/problems/combination-sum-iii/)
+
+算法思路: 还是使用深度优先.
+
+- candidates：当前用于操作的数组
+- path: 当前的路径
+- resides: 当前距离目标的差值
+
+每次进入 dfs:
+
+- 首先检查条件是否满足:
+  - resides若为负数,退出当前环境
+  - path.length 若等于 k 则退出当前环境
+  - candidates存在且candidates的长度为0,则退出当前环境
+
+- 然后循环candidates,对于每个candidates[i]
+  - 得到当前的path = [...path, candidates[i]]
+  - 计算当前path长度,若等于k 则判断 resides - candidates[i] 是否为0, 若为0,则将当前路径推入res中。并退出
+  - 递归调用 dfs(resides - candidates[i], candidates.slice(i+1), path)
+  - 这里需要回溯 path.pop()
+
+```js
+var combinationSum3 = function (k, n) {
+    var res = []
+    function dfs(candidates, resides, path) {
+        if ((candidates && candidates.length == 0) || path.length > k || resides < 0) return
+        for (let i = 0, len = candidates.length; i < len; i++) {
+            path = [...path, candidates[i]]
+            if (path.length === k && resides - candidates[i] == 0) return res.push(path.slice())
+            dfs(candidates.slice(i + 1), resides - candidates[i], path)
+            path.pop()
+        }
+    }
+
+    dfs([1, 2, 3, 4, 5, 6, 7, 8, 9], n, [])
+    return res
+}
+```
+
+## 栗子 - 从根到叶子节点数字之和
+
+[题目参考](https://leetcode-cn.com/problems/sum-root-to-leaf-numbers/)
+
+思路: 
+
+- 使用 sum 保存总和, r 保存当前树结构的根节点, path 保存当前的路径(数组类型)
+- 使用dfs深度优先遍历树, 对于每次遍历 dfs(root, path)
+  - 判断r 是否为空,若空则返回,否则执行下一步
+  - 更新当前的path = [...path, r.val]
+  - 判断当前是否为叶子节点:
+    - 若是则: `sum += path.join('') - 0`. 其中`-0`是数字的隐式类型转换
+  - dfs(r.left, path)
+  - dfs(r.rigth, path)
+  - 回溯 path.pop()
+
+```js
+var sumNumbers = function (root) {
+    var sum = 0;
+    function dfs(r, val) {
+        if (!r) return
+        val = [...val, r.val]
+        if (!r.left && !r.right) {
+            return sum += val.join('') - 0
+        }
+        dfs(r.left, val)
+        dfs(r.right, val)
+        val.pop()
+    }
+    dfs(root, '')
+    return sum
+};
+```
+
+
+
+## 栗子 - 路径总和II
+
+[题目参考](https://leetcode-cn.com/problems/path-sum-ii/)
+
+算法思路:大体的思路是深度优先遍历,遍历顺序`5 -> 4 -> 11 -> 7 --> 11 -> 2 --> 11 --> 4 -->5`
+
+其中,`->`代表下一个`-->代表回退`。递归循环调用dfs函数.传入当前的树结构的根节点r、距离总和差值resides和当前的路径path
+
+每次dfs循环如下:
+
+- 判断r是否为null, 若是则返回
+- 生成当前的path.
+- 判断 resides - r.val 是否为0
+  - 若为0,则判断当前是否是叶子节点
+- dfs 当前节点的左节点和右节点
+
+```js
+var pathSum = function(root, sum){
+    var res = []
+    
+    function dfs(resides, r, path){
+        if(!r) return
+        path = [...path, r.val]		// 这里使用[]隐式规则,在新的内存空间中生成了一个数组
+        if(resides - r.val === 0 && !r.left && !r.right) return res.push(path)
+        dfs(resides - r.val, r.left, path)
+        dfs(resides - r.val, r.right, path)
+    }
+    dfs(sum, root, [])
+    return res
+}
+```
+
+## 栗子 - 二叉树中的最大路径和
+
+[题目参考](https://leetcode-cn.com/problems/binary-tree-maximum-path-sum/)
+
+# 
+
+# 分治法
+
+[前置题 - 最大子序和](https://leetcode-cn.com/problems/maximum-subarray/)
+
+求元素组的子序最大和,等价于求: Max(left_sum, cross_sum, right_sum)的最大值.其中:
+
+- left_sum: 是下标为 (0 + arr.length)/2 左边的元素的最大和
+- right_sum: 是下标为(0 + arr.length)/2 右边的元素的最大和
+
+- cross_sum: 是从下标为(0 + arr.length)/2 开始,左右延申的元素的最大和
+
+```java
+// java版 - 分治法
+class Solution{
+    public int crossSum(int[] nums, int left, int right, int p){
+        if(left === right) return nums[left];
+        
+        int leftSubSum = Integer.MIN_VALUE;
+        int currSum = 0;
+        for(int i = p; i > left - 1; --i)
+            
+    }
+}
+```
 
 
 
 
 
+
+
+
+
+
+
+# 贪心算法
+
+
+
+
+
+# 动态规划
 
 # 树
 

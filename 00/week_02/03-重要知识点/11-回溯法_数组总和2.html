@@ -10,25 +10,22 @@
       // 此时candidates不重复.
       // 需要改变传入的candidates值
       var combinationSum2 = function(candidates, target) {
-        let res = [],
-          path = [],
-          currCandidates = []
         candidates.sort((a, b) => a - b)
-        function dfs(resides, path, candidates) {
+        var res = []
+
+        function dfs(resides, candidates, path) {
           if (resides < 0) return
-          if (resides == 0) return res.push(path.slice())
+          if (resides === 0) res.push(path.slice())
           for (let i = 0, len = candidates.length; i < len; i++) {
-            // 防止重复
             if (candidates[i] !== candidates[i - 1]) {
               if (resides - candidates[i] < 0) break
               path.push(candidates[i])
-              dfs(resides - candidates[i], path, candidates.slice(i + 1))
+              dfs(resides - candidates[i], candidates.slice(i + 1), path)
               path.pop()
             }
           }
         }
-
-        dfs(target, path, candidates)
+        dfs(target, candidates, [])
         return res
       }
       console.log(combinationSum2([10, 1, 2, 7, 6, 1, 5], 8))

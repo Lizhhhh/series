@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      /*
+        从左往右对比,若左边的大于右边: 交换左右两边的数字.同时使用pos保存下一次的长度
+      */
+      function bubbleSort(arr) {
+        let len = arr.length,
+          nextLen,
+          tmp
+        while (len > 0) {
+          nextLen = 0
+          for (let i = 0; i < len; i++) {
+            if (arr[i] > arr[i + 1]) {
+              nextLen = i
+              tmp = arr[i]
+              arr[i] = arr[i + 1]
+              arr[i + 1] = tmp
+            }
+          }
+          len = nextLen
+        }
+        return arr
+      }
+
+      console.log(bubbleSort([1, 3, 2, 5, 4, 1, 7, 9, 8]))
+    </script>
+  </body>
+</html>

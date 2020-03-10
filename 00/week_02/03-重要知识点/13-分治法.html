@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      var maxSubArray = function(nums) {
+        let len = nums.length
+        if (len == 0) return 0
+        return maxSubArraySum(nums, 0, len - 1)
+      }
+      var maxSubArraySum = function(arr, left, right) {
+        if (left == right) return arr[left]
+        let mid = (left + right) >>> 3
+        return Math.max.call(null, maxSubArraySum(arr, left, mid), maxSubArraySum(arr, mid + 1, right), maxCrossingSum(arr, left, mid, right))
+      }
+      var maxCrossingSum = function(arr, left, mid, right) {
+        let sum = 0,
+          leftSum = Number.MIN_SAFE_INTEGER
+        for (let i = mid + 1; i <= right; i++) {
+          sum += arr[i]
+          if (sum > rightSum) {
+            rightSum = sum
+          }
+        }
+        return leftSum + rightSum
+      }
+      console.log(maxSubArray([-2, 1, -3, 4, -1, 2, 1, -5, 4]))
+    </script>
+  </body>
+</html>

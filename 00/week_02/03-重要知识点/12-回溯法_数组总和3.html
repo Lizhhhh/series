@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      // var combinationSum3 = function(k, n) {
+      //   var res = []
+      //   function dfs(candidates, resides, path) {
+      //     if ((candidates && candidates.length == 0) || path.length > k || resides < 0) return
+      //     for (let i = 0, len = candidates.length; i < len; i++) {
+      //       path = [...path, candidates[i]]
+      //       if (path.length === k && resides - candidates[i] == 0) return res.push(path.slice())
+      //       dfs(candidates.slice(i + 1), resides - candidates[i], path)
+      //       path.pop()
+      //     }
+      //   }
+
+      //   dfs([1, 2, 3, 4, 5, 6, 7, 8, 9], n, [])
+      //   return res
+      // }
+      var combinationSum3 = function(k, n) {
+        var res = [],
+          pathLen
+
+        function dfs(resides, candidates, path) {
+          pathLen = path.length
+          if (resides < 0 || (candidates && candidates.length == 0) || pathLen === k) return
+          for (let i = 0, len = candidates.length; i < len; i++) {
+            path = [...path, candidates[i]]
+            pathLen = path.length
+            if (pathLen === k && resides - candidates[i] == 0) return res.push(path.slice())
+            dfs(resides - candidates[i], candidates.slice(i + 1), path)
+            path.pop()
+          }
+        }
+        dfs(n, [1, 2, 3, 4, 5, 6, 7, 8, 9], [])
+        return res
+      }
+      combinationSum3(3, 9)
+    </script>
+  </body>
+</html>
+

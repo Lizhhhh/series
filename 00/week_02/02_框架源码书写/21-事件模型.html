@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      // 全局的event对象,提供 on, off, emit方法
+      var event = (function() {
+        eventObjs = {}
+        return {
+          /* 注册事件: 可以连续注册, 可以注册多个事件 */
+          on: function(type, handler) {
+            ;(eventObjs[type] || (eventObjs[type] = [])).push(handler)
+          },
+          /* 用来移除事件:
+              如果不带参数,移除所有参数
+              如果带有事件名参数,移除这个事件名下的所有事件
+              如果带有2个参数,表示就表示移除某一个事件的具体处理函数
+           */
+          off: function(type, handler) {
+            let len = arguments.length
+            if (len == 0) {
+              // 无参数,移除所有的事件
+              eventObjs = {}
+            } else if (len == 1) {
+              // 只有事件的类型,移除该事件的所有处理函数
+              eventObjs[type] = []
+            } else if (len == 2) {
+              // 移除type事件的 handler处理函数
+              // 使用循环移除所有该函数对应的type事件
+              // 删除数组中的第i项  Array.prototype.slice(i,1)
+              let _events = eventObjs[type]
+              if (!_events) return
+              for (let i = _events.length - 1; i > 0; i--) {
+                if (_events[i] === handler) {
+                  _events.splice(i, 1)
+                }
+              }
+            }
+          },
+          /*
+            用于触发事件的:
+              包装参数,传递给事件处理函数
+          */
+          emit: function(type) {
+            // 注: arugments是一个伪数组,伪数组是没有slice方法的
+            let args = Array.prototype.slice(arguments, 1)
+            let _events = eventObjs[type]
+            if (!_events) return
+            for (let i = 0, len = _events.length; i < len; i++) {
+              _events[i].apply(null, args)
+            }
+          }
+        }
+      })()
+    </script>
+
+    <script>
+      event.on('click', () => console.log('第1个 click 事件')) // 无法移除. 因为引用类型在JS中采用的是地址比较
+      event.on('click', () => console.log('第2个 click 事件'))
+      event.on('click', () => console.log('第3个 click 事件'))
+      event.on('click', () => console.log('第4个 click 事件'))
+      event.on('click', () => console.log('第5个 click 事件'))
+
+      console.log(1)
+      console.log(1)
+      console.log(1)
+      console.log(1)
+      console.log(1)
+      console.log(1)
+
+      function f() {
+        event.emit('click')
+      }
+    </script>
+  </body>
+</html>
