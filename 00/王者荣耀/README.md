@@ -111,7 +111,7 @@ new Vue({
 
 ### admin/src/index.js
 
-#### 1. 让container容器充满整个屏幕的高度 
+#### 1. 让container容器充满整个 屏幕的高度 
 
 ```html
 <template>
@@ -656,4 +656,243 @@ router.get('/',async(req, res)=>{
 - 装备规则:
   - 装备名字: String字段
   - 装备图标: String字段. 会上传图片,将图片存储在磁盘上.将路径存储在装备图标的String字段
+
+
+
+# 其他操作
+
+## 上传图片
+
+- 如果有图片则显示图片,否则显示图标
+
+```html
+<img v-if="model" :src="model.icon" class="avatar" />
+<i v-else class="el-icon-plus avatar-uploader-icon"></i>
+<!-- 如果有图片则显示图片,否则显示图标 -->
+```
+
+***
+
+- action: 上传时,发送请求的URL
+- on-success: 成功之后的操作, 写在Vue的methods中
+
+```html
+<el-upload
+   class="avatar-uploader"
+   :action="$http.defaults.baseURL + '/upload'
+   :on-success="afterLoader"
+>
+```
+
+***
+
+- express中本身是无法处理上传的二进制文件的.
+- 使用multer第三方库来实现
+
+```js
+$ npm i multer
+
+const multer = require('multer')
+const upload = multer({dest: __dirname + '/../../uploads'})
+
+app.post('/admin/api/upload',upload.single('file') ,async(req, res)=>{
+    const file = req.file
+    file.url = `http://localhost:3000/uploads/${file.filename}`
+    res.send(file)
+})
+
+// 其中 dest: 代表上传的地址,即保存在哪个磁盘内
+// req自身是没有req.file的,是通过中间件 upload.single('file') 加上去的 
+// file.url是图片在服务端的地址
+```
+
+***
+
+- 将图片资源暴露出去
+- 在服务端的src目录下的 index.js
+
+```js
+app.use('/uploads', express.static(__dirname + '/uploads'))
+```
+
+***
+
+- 上传成功后,在前端显示图片
+
+```html
+<el-upload class="avatar-uploader" :action="$http.defaults.baseURL + '/upload'" :on-success="afterUpload"></el-upload>
+
+<script>
+    export default {
+        methods: {
+            afterUpload(res){
+                this.$set(this.model, 'icon', res.url)
+            }
+        }
+    }
+    // 使用this.$set的原因是,vue 2.0 响应式的缺陷: model属性的赋值,有时候无法响应式监听到
+</script>
+```
+
+## element UI中 table显示图标
+
+```html
+<el-table-column prop="icon" label="图标">
+    <template slot-scope="scope">
+        <img :src="scope.row.icon" alt="" style="height: 3em" />
+    </template>
+</el-table-column>
+
+<!-- scope.row在elementUI中指向当前行 -->
+```
+
+
+
+## axios基本配置
+
+- 写在src目录下的 http.js 文件中
+
+```js
+import axios from 'axios'
+
+const http = axios.create({
+    baseURL: 'http://localhost:3000/admin/api'
+})
+
+export default http
+```
+
+- 在根目录 src 下的 main.js中引用 axios配置
+
+```js
+import http from './http'
+Vue.prototype.$http = http
+```
+
+经过以上配置,就可以在Vue中使用 $http 访问到 配置的`http://localhost:3000/admin/api`了
+
+## express中静态资源暴露
+
+使用express生成的服务中,想要被访问的东西可见一定要写路由. 可以尝试使用 express.static方法暴露被显示的东西(静态文件托管)
+
+```js
+app.use('/uploads', express.static(__dirname + '/uploads'))
+```
+
+## 英雄与分类关联
+
+英雄可以分为战士、法师、此客、射手. 需要将英雄与这些分类关联起来,在新增英雄的时候,选择对应的分类.而不是自己输入哪个类型
+
+```js
+// 在mongoose中做关联
+const mongoose = require('mongoose')
+
+// 分类的父类 也是分类, 即 自己和自己做关联
+const schema = new mongoose.Schema({
+    name: { type: String},
+    parent: { type: mongoose.SchemaTypes.ObjectId, ref: 'Category' }
+})
+
+// 英雄与分类(Category)关联
+const schema = new mongoose.Schema({
+    name: { type: String},
+    avatar: { tpye: String},
+    title: {type: String},
+    category: { type: mongoose.SchemaTypes.ObjectId, ref: 'Category'}
+})
+```
+
+一个英雄可能有多个分类: 露娜可以是 战士/法师.改进如下
+
+```js
+const schema = new mongoose.Schema({
+    name: {type: String},
+    avatar: { type: String},
+    title: { type: String},
+    category: [ {type: mongoose.SchemaTypes.ObjectId, ref: 'Category'} ]
+})
+```
+
+## 多选下拉框
+
+英雄的分类可以有多个: 如露娜可以是 战士和法师
+
+```html
+<template>
+    <el-form-item label="类型">
+        <el-selcet v-model="model.categories" multiple>
+            <el-option
+               v-for="item of categories"
+               :key="item._id"
+               :label="item.name"
+               :value="item._id"
+            ></el-option>
+        </el-selcet>
+    </el-form-item>
+</template>
+<!-- 上面循环categories中的数据, 将之绑定在model.categories上 -->
+<script>
+    // 请求数据库中的数据
+    export default{
+        props: {
+            id: {}
+        },
+        data(){
+            return {
+                model:{
+                    categories: []
+                }
+            }
+        },
+        methods:{
+            async fetchCategories(){
+                const res = await this.$http.get('rest/categories')
+                this.categories = res.data
+            }
+        }
+    }
+</script>
+```
+
+- 上述能使用`this.$http.get`的原因,是在根目录的src/main.js中引入了配置好的src/http.js文件
+
+```js
+// src/http.js
+import axios from 'axios'
+
+const http = axios.create({
+    baseURL: 'http://localhost:3000/admin/api'
+})
+
+export default http
+```
+
+```js
+// src/main.js
+import http from './http'
+Vue.prototype.$http = http
+```
+
+## 在elementUI中使用tabs切换
+
+英雄本身涉及到多个不同的方面: 基本信息、技能.因此使用elementUI中的tabs进行切换输入
+
+```html
+<el-tabs tpye="border-card" value="skills">
+    <!-- 基本信息 -->
+    <el-tab-pane label="基本信息">
+    </el-tab-pane>
+    <!-- 技能 -->
+    <el-tab-pane label="技能" name="skills">
+    </el-tab-pane>
+</el-tabs>
+```
+
+
+
+
+
+
+
+
 

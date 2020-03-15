@@ -12,7 +12,7 @@
           :show-file-list="false"
           :on-success="afterUpload"
         >
-          <img v-if="model" :src="model.icon" class="avatar" />
+          <img v-if="model.icon" :src="model.icon" class="avatar" />
           <i v-else class="el-icon-plus avatar-uploader-icon"></i>
         </el-upload>
       </el-form-item>
@@ -55,7 +55,8 @@ export default {
       this.model = res.data
     },
     afterUpload(res) {
-      console.log(res)
+      this.$set(this.model, 'icon', res.url)
+      this.model.icon = res.url
     },
 
   },
@@ -65,7 +66,7 @@ export default {
 }
 </script>
 
-<style scoped>
+<style>
 .avatar-uploader .el-upload {
   border: 1px dashed #d9d9d9;
   border-radius: 6px;
