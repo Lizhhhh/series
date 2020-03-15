@@ -1758,59 +1758,247 @@ var event = (function(){
 
 # Vue中 发布/订阅模式的实现
 
-## 简述
+## 引入 Dep 对象
 
-1. Vue中是根据虚拟DOM生成真实DOM的(这样性能更高)
-2. Vue采用组件化的思想,将各个页面看作不同的组件
-3. 每个组件都有着对应的数据,每个数据对应一个watcher
-4. 当读取数据的时候,会调用depend方法,将对应组件的数据存入全局的Watcher中(依赖收集)
-5. 对数据进行设置的时候,会调用notify方法.触发全局Watcher中对应的事件处理函数 (派发更新)
+该对象提供依赖收集(depend)的功能,和 派发更新(notify)的功能
 
-【为什么这样处理】:
-
-- Vue中页面的更新(diff算法)是以组件为单位的,当组件中的数据发送变化时,会更新对应的组件
-
-- 如果页面中只有一个组件(vue实例), 不会有性能损失
-- 但是,如果页面中有多个组件(多 watcher 的一种情况),第一次会有多个组件的watcher存入到全局watcher中
-  - 例如修改了其中一个组件的数据,表示只会对该组件进行diff算法
-  - 只会访问该组件的watcher
-  -  再次往全局存储的只有该组件的watcher
-  - 页面更新的时候,也就只需要更新一部分
-
-## rollup
-
-使用`<script src="./src/vnode.js"></script>`之类`script`标签引入js文件时,需要明确知道js文件的执行顺序.使用rollup帮助构建,不需要管理js的加载顺序
+在notify中调用 watcher 的 update 方法
 
 
 
-## 改写observe函数
+## Watcher 和 Dep
 
-- 缺陷: 
-  - 无法处理数组
-  - 响应式无法在中间集成对应的 watcher 处理
-  - 我们实现的 reactify 需要和实例仅仅的绑定在一起, 使用 发布/订阅模式 (分离/解耦)
+之间将渲染 Watcher 放在全局作用域下,这样处理是有问题的.
+
+- vue项目中,包含很多的组件,各个组件是自治的(自我管理)
+  - Watcher可能会有多个.
+  - 每一个watcher用于描述,一个渲染行为或计算行为(子组件发生数据的更新在Vue中是局部渲染)
+  - Vue中推荐的是使用计算属性来代替复杂的插值表达式,计算属性会伴随其使用属性的变化而变化的
+  - `name:() => this.firstName +  this.lastName`,计算属性依赖于 firstName 和 lastName, 就会促使重新计算(watcher)
+
+- 依赖收集与派发更新是如何运行起来的
+
+  ```mermaid
+  graph TB
+  	1(name)
+  	2(age)
+  	3(gender)
+  ```
+
+  我们在访问的时候,就会进行收集,在修改的时候就会更新,收集什么就更新什么
+
+所谓的依赖收集**实际上就是告诉当前的watcher什么属性被访问了**
+
+那么在这个watcher计算的时候或渲染页面的时候就会将这些收集的属性进行更新
+
+
+
+如何将属性与当前watcher关联起来??
+
+- 在全局准备一个 targetStack
+- 在Watcher调用get方法的时候,将当前Watcher放到全局,在get之前结束的时候,将这个全局的watcher移除.提供: pushTarget,popTarget
+- 在每一个属性中,都有一个Dep对象
+
+
+
+在页面被渲染显示出来的时候,属性一定会被访问到.既然正在渲染中,也就表示此时的Watcher正在调用get,且还没有结束
+
+我们在访问对象属性的时候,我们的渲染watcher就在全局中将属性与watcher关联,其实就将当前渲染的watcher存储到属性相关的dep中
+
+同时将Dep也存储到当前全局的watcher中.(互相引用的关系)
+
+- 属性引用了当前的渲染wathcer,属性知道谁渲染它
+- 当前渲染watcher 引用了访问的属性(Dep),**当前的Watcher知道渲染了什么属性**
+
+# 流程梳理
+
+## 响应式原理
+
+[参考](https://juejin.im/post/5cf3cccee51d454fa33b1860)
+
+### defineReactive
+
+在这里定义响应式: 改写数据的读写操作,在读取的时候(初始化),添加依赖. 在写入的时候派发事件 
 
 ```js
+function defineReactive(target, key, value, enumerable){
+    if(typeof value === 'object' && value != null){
+        observe(value)
+    }
+    let dep = new Dep()
+    Object.defineProperty(target, key, {
+        configurable: true,
+        enumerable: !!enumerable,
+        get(){
+            dep.depend()
+            return value
+        },
+        set(newVal){
+            if(value  === newVal) return
+            
+            if(typeof newVal == 'object' && newVal != null){
+                observe(newVal)
+            }
+            value = newVal
+            dep.notify()
+        }
+    })
+}
+```
 
+### observe
+
+Vue中用Observer类来管理上述响应式变化Object.defineProperty的过程, 其中有一个`observe`函数,用于将传入的对象转换为响应式
+
+```js
+function observe(obj, vm){
+    if(Array.isArray(obj)){
+        // 数组
+        // 对数组进行处理,拦截其push、pop等方法
+        obj.__proto__ = array_methods
+        for(let i = 0; i < obj.length; i++){
+            observe(obj[i])
+        }
+    } else {
+        let keys = Object.keys(obj)
+        for(let i = 0; i< keys.length; i++){
+            let prop = keys[i]
+            defineReactive.call(vm, obj, prop, obj[prop], true)
+        }
+    }
+}
+
+// 下面是对数组方法进行重写,属于优化部分
+let ARRAY_METHOD = ['push', 'pop', 'shift', 'unshift', 'reverse', 'sort', 'splice']
+let array_methods = Object.create(Array.prototype)
+
+ARRAY_METHOD.forEach(method=>{
+    array_methods[method] = function(){
+        // 拦截的东西写在这里
+        for(let i =0; i< arguments.length; i++){
+            observe(arguments[i])
+        }
+        
+        let res = Array.prototype[method].apply(this, arguments)
+        return res
+    }
+})
+```
+
+### Dep
+
+帮助收集【究竟要通知到哪里】,使用 发布/订阅 模式帮助解耦
+
+```js
+// 记录依赖的序号
+let depid = 0
+class Dep{
+    constructor(){
+        this.id = depid++
+        // 存储的一些依赖
+        this.subs = []
+    }
+    
+    /* 添加一个 watcher */
+    addSub(sub){
+        this.subs.push(sub)
+    }
+    
+    /* 移除 watcher */
+    removeSub(sub){
+        for(let i = this.subs.length -1; i>=0; i--){
+            if(sub == this.subs[i]){
+                this.subs.splice(i, 1)
+            }
+        }
+    }
+    
+    /* 将当前Dep 与当前 watcher 关联 */
+    depend(){
+        if(Dep.target){
+            this.addSub(Dep.target)
+            
+            Dep.target.addDep(this)
+        }
+    }
+    
+    /* 触发与之关联的 watcher 的update方法,起到更新的作用 */
+    notify(){
+        let deps = this.subs.slice()
+        deps.forEach(watcher =>{
+            watcher.update()	
+        })
+    }
+}
+
+Dep.target = null
+
+let targetStack = []
+
+/* 当前操作的 watcher 存储到全局watcher中,参数target就是当前watcher */
+function pushTarget(target){
+    targetStack.unshift(Dep.target)
+    Dep.target = target
+}
+
+function popTarget(){
+    Dep.target = targetStack.shift()
+}
+```
+
+### Watcher
+
+类似中介的角色,当watcher监听的数据发生变化时,就通知各自的组件进行更新渲染
+
+```js
+let watcherid = 0
+
+/* Watcher观察者,用于发射更新的行为 */
+class Watcher{
+    constructor(vm, expOrFn){
+        this.id = watcherid++
+        this.vm = vm
+        this.getter = expOrFn
+        
+        this.deps =[]
+        this.depIds = {}
+        
+        this.get()
+    }
+    
+    get(){
+        pushTarget(this)
+        this.getter.call(this.vm, this.vm)
+        popTarget()
+    }
+    
+    run(){
+        this.get()
+    }
+    
+    update(){
+        this.run()
+    }
+    
+    cleanupDep(){}
+    
+    addDep(dep){
+        this.deps.push(dep)
+    }
+}
 ```
 
 
 
-## 引入 Watcher
-
-思路:
-
-- 数据发生变化的时候,会通知watcher进行对应的刷新
-- 当访问数据的时候, 通知全局watcher来保存我们的watcher
-
-实现:
-
-- 只考虑修改后刷新(响应式核心算法)
-  - 在Vue中提供一个构造函数 Watcher,它会提供以下方法
-    - `get()`: 用来进行**计算**或**执行处理函数**
-    - `update()`: 公共的外部方法, 该方法会触发内部的run方法
-    - `run()`: 用来判断内部是使用异步运行还是同步运行等
 
 
 
-- 再考虑依赖收集(优化,提高性能)
+
+
+
+
+
+
+
+
+

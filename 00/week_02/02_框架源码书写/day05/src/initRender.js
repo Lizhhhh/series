@@ -1,5 +1,6 @@
 Vue.prototype.mount = function() {
   this.render = this.createRenderFn()
+  // 闭包的使用
   this.mountComponent()
 }
 
@@ -7,7 +8,10 @@ Vue.prototype.mountComponent = function() {
   let mount = () => {
     this.update(this.render())
   }
-  mount.call(this)
+
+  // 这个 Watcher 就是全局的 Watcher,在任何一个位置都可以访问他
+  new Watcher(this, mount)
+
 }
 
 Vue.prototype.createRenderFn = function() {
@@ -18,7 +22,7 @@ Vue.prototype.createRenderFn = function() {
   }
 }
 
-Vue.prototype.update = function(vnode){
+Vue.prototype.update = function(vnode) {
   let realDOM = parseVNode(vnode)
-  this._parent.replaceChild(realDOM,document.querySelector('#app'))
+  this._parent.replaceChild(realDOM, document.querySelector('#app'))
 }

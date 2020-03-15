@@ -19,6 +19,8 @@
         </ul>
       </div>
     </div>
+    <script src="./src/watcher.js"></script>
+    <script src="./src/Dep.js"></script>
     <script src="./src/vnode.js"></script>
     <script src="./src/compiler.js"></script>
     <script src="./src/vue.js"></script>
@@ -37,12 +39,10 @@
             { name: '张小三', age: 3, gender: '男' }
           ]
         },
-        computed:{
-          // 计算属性也是响应式的(watcher)
-        },
-        watch: {
-          // 监听什么属性, 这个属性是支持路径语法
-          // 也是使用watcher实现
+        a: {
+          b: {
+            c: 'jim'
+          }
         }
       })
     </script>
