@@ -2,7 +2,7 @@
   <div class="about">
     <h1>{{ id ? "编辑" : "新建" }}英雄</h1>
     <el-form label-width="120px" @submit.native.prevent="save">
-      <el-tabs type="border-card" >
+      <el-tabs type="border-card">
         <!-- 基本信息 -->
         <el-tab-pane label="基本信息">
           <el-form-item label="名称">
@@ -156,7 +156,8 @@ export default {
       model: {
         name: '',
         avatar: '',
-        scores: {}
+        scores: {},
+        skills: []
       },
       categories: []
     }
@@ -205,27 +206,5 @@ export default {
 </script>
 
 <style>
-.avatar-uploader .el-upload {
-  border: 1px dashed #d9d9d9;
-  border-radius: 6px;
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
-}
-.avatar-uploader .el-upload:hover {
-  border-color: #409eff;
-}
-.avatar-uploader-icon {
-  font-size: 28px;
-  color: #8c939d;
-  width: 5rem;
-  height: 5rem;
-  line-height: 5rem;
-  text-align: center;
-}
-.avatar {
-  width: 5rem;
-  height: 5rem;
-  display: block;
-}
+
 </style>

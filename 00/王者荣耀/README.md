@@ -951,7 +951,7 @@ $ npm install vue2-editor
             }
         }
     }
-    
+</script>
 ```
 
 

@@ -10,6 +10,8 @@ import ItemEdit from '../views/ItemEdit.vue'
 import ItemList from '../views/ItemList.vue'
 import HeroEdit from '../views/HeroEdit.vue'
 import HeroList from '../views/HeroList.vue'
+import AdEdit from '../views/AdEdit.vue'
+import AdList from '../views/AdList.vue'
 
 Vue.use(VueRouter)
 
@@ -34,7 +36,11 @@ const routes = [
       // 英雄路由
       { path: '/heros/create', component: HeroEdit },
       { path: '/heros/edit/:id', component: HeroEdit, props: true },
-      { path: '/heros/list', component: HeroList }
+      { path: '/heros/list', component: HeroList },
+      // 广告路由
+      { path: '/ads/create', component: AdEdit },
+      { path: '/ads/edit/:id', component: AdEdit, props: true },
+      { path: '/ads/list', component: AdList }
     ]
   }
 ]
