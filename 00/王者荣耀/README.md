@@ -888,7 +888,71 @@ Vue.prototype.$http = http
 </el-tabs>
 ```
 
+## 富文本编辑器
 
+在某些页面(如文章详情页面),需要某些字体加粗之类的操作.这个时候需要一个富文本编辑器. elementUI本身不带富文本编辑器,在[npm](https://www.npmjs.com/package/vue2-editor)找到一个vue2-editor.下面介绍如何使用
+
+- `安装vue2-editor`
+
+```js
+$ npm install vue2-editor
+```
+
+- 使用vue2-editor
+
+```html
+<template>
+    <div id="app">
+        <vue-editor v-model="content"></vue-editor>
+    </div>
+</template>
+<script>
+    import { VueEditor } from 'vue2-editor'
+    
+    export default{
+        component:{
+            VueEditor
+        },
+        data(){
+            return {
+                content: `<h1>Some inital content</h1>`
+            }
+        }
+    }
+</script>
+```
+
+- vue2-editor自带的处理图片的组件,默认会将图片转换成base64编码(可能很大),因此需要调用以下接口,自己处理图片
+
+```html
+<template>
+    <div id="app">
+        <vue-editor id="editor"
+        useCustomImageHandler
+        @image-added="handleImageAdded"
+        v-model="htmlForEditor">
+        </vue-editor>
+    </div>
+</template>
+
+<script>
+    import { VueEditor } from 'vue2-editor'
+    export default {
+        components: {
+            VueEditor
+        },
+        methods: {
+            async handleImageAdded(file, Editor, cursorLocation, resetUploader){
+              const formData =  new FormData()
+              formData.append('file', file)
+              const res = await this.$http.post('upload', formData) // 返回结果是图片在服务器中的地址
+              Editor.insertEmbed(cursorLocation, "image", res.data.url)  // 在指定位置(cursorLocation)处,插入一张图片,图片的地址是 res.data.url
+              resetUploader()  // 重写加载富文本编辑器
+            }
+        }
+    }
+    
+```
 
 
 

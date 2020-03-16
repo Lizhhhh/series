@@ -2,6 +2,8 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Main from '../views/Main.vue'
 
+import ArticleEdit from '../views/ArticleEdit.vue'
+import ArticleList from '../views/ArticleList.vue'
 import CategoryEdit from '../views/CategoryEdit.vue'
 import CategoryList from '../views/CategoryList.vue'
 import ItemEdit from '../views/ItemEdit.vue'
@@ -17,6 +19,11 @@ const routes = [
     name: 'main',
     component: Main,
     children: [
+      // 文章路由
+      { path: '/articles/create', component: ArticleEdit },
+      { path: '/articles/edit/:id', component: ArticleEdit, props: true },
+      { path: '/articles/list', component: ArticleList },
+      // 分类路由
       { path: '/categories/create', component: CategoryEdit },
       { path: '/categories/edit/:id', component: CategoryEdit, props: true },
       { path: '/categories/list', component: CategoryList },
@@ -28,8 +35,6 @@ const routes = [
       { path: '/heros/create', component: HeroEdit },
       { path: '/heros/edit/:id', component: HeroEdit, props: true },
       { path: '/heros/list', component: HeroList }
-
-
     ]
   }
 ]
