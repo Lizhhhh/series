@@ -954,6 +954,506 @@ $ npm install vue2-editor
 </script>
 ```
 
+## 密码的处理
+
+在做管理员账户密码的时候,密码通常需要进行加密处理,这样可以更好的保护用户隐私.下面从前端开始,在创建的时候.一步一步到后端
+
+```html
+<!-- 使用 elementUI -->
+<div class="about">
+	<el-form label-width="120px" @submit.native.prevent="save">
+        <el-form-item label="用户名">
+            <el-input v-model="model.username"></el-input>
+        </el-form-item>
+        <el-form-item label="密码">
+            <el-input v-model="model.password" type="password"></el-input>
+        </el-form-item>
+        <el-form-item>
+            <el-button type="primary" native-type="submit">保存</el-button>
+        </el-form-item>
+    </el-form>
+</div>
+<!-- @submit.native.prevent="save": 阻止了表单的默认提交,并将其提交方法保存在save函数中 -->
+<script>
+    export default{
+        data(){
+            return{
+                model: {}
+            }
+        },
+        methods{
+        	async save(){
+                await this.$http.post('rest/admin_users', this.model)
+            }
+    	}
+    }
+</script>
+```
+
+在点击提交按钮后,会在异步函数(async)中执行`this.$http.post()`,这个方法之所以能够使用,是因为在`src/http.js`中,有如下配置
+
+```js
+// src/http.js
+import axios from 'axios'
+
+const http = axios.create({
+    baseURL: 'http://localhost:3000/admin/api'
+})
+
+export default http
+```
+
+并在`src/main.js`中将http对象引入,并挂载到Vue的原型上
+
+```js
+// src/main.js
+import http from './http.js'
+Vue.prototype.$http = http
+```
+
+因此,上面`await this.$http.post('rest/admin_users', this.model)`实际上请求的网址是:`http://localhost:3000/admin/api/rest/admin_users`。
+
+有了URL就可以通过URL与后端进行交互了。此时后端必然在监听3000端口下的路由:
+
+```js
+// server/index.js
+const express = require('express')
+const app = express()
+
+require('./routes/admin')(app)
+
+app.listen(3000, ()=>{
+    console.log('http://localhost:3000')
+})
+```
+
+路由是对通用接口的处理
+
+```js
+// server/routes/admin/index.js
+module.exports	= app =>{
+    const express = require('express')
+    const router = express.Router({		// 导入父级参数到子级的配置
+        mergeParams: true
+    })
+    app.use('/admin/api/rest/:resource', async(req, res, next)=>{
+        const modelName = require('inflection').classify(req.paramas.resource)
+        req.Model = require(`../../models/${modelName}`)
+        next()
+    }, router)
+}
+```
+
+上述使用了中间件,在请求url地址为 `http://localhost:3000/admin/api/rest/XXXs`的时候,会通过中间件.将XXXs变为XXX
+
+如请求网址为`http://localhost:3000/admin/api/rest/ads`,中间件中的第三方模块`inflection`会将`ads`转换成Ad.然后加载Ad的模型(mongoose提供的一个操作数据库的接口),并将该API挂载到req.Model上
+
+【言归正传】.
+
+在新建管理员界面.输入用户名密码,然后点击提交键
+
+此时会发送一个POST请求,URL:`http://localhost:3000/admin/api/rest/admin_users`。密码传入到后端后.需要进行加密处理(这里使用bcrypt).在Model层
+
+```js
+const mongoose = require('mongoose')
+
+const schema = new mongoose.Schema({
+    username: { type: String},
+    password: { 
+        type: String,
+        select: false,			// 密码无法被查询到。保证用户信息的安全
+        set(val) {
+            // 使用mongoose的劫持函数,在密码输入的时候,调用第三方模块 bycrypt 将输入的密码变为10位数的散列函数(使用前,先按照 npm i bcrypt)
+            return require('bcrypt').hasSync(val, 10)
+        }}
+})
+```
+
+> 建议使用bcrypt做密码的散列
+
+## 登录
+
+### 界面
+
+使用Vue2.x + elementUI实现的登录界面
+
+```html
+<template>
+    <div class="login-container">
+        <el-card header="请先登录" class="login-card">
+            <!-- @submit.native.prevent阻止表单的默认提交行为,并将提交的事件处理函数,绑定到login上 -->
+            <el-form @submit.native.prevent="login">
+                <el-form-item label="用户名">
+                    <el-input v-model="model.username"></el-input>
+                </el-form-item>
+                <el-form-item label="密码">
+                    <el-input type="password" v-model="model.password"></el-input>
+                </el-form-item>
+                <el-form-item>
+                    <el-button type="primary" native-type="submit">登录</el-button>
+                </el-form-item>
+            </el-form>
+        </el-card>
+    </div>
+</template>
+```
+
+### 逻辑
+
+- 前端传入用户名和密码
+
+```html
+<template>
+    <el-form @submit.native.prevent="login">
+        <el-form-item label="用户名">
+            <el-input v-model="model.username"></el-input>
+        </el-form-item>
+        <el-form-item label="密码">
+            <el-input v-model="model.password" type="password"></el-input>
+        </el-form-item>
+    </el-form>
+</template>
+<script>
+    export default {
+        data(){
+            return {
+                model: {}
+            }
+        },
+        methods:{
+            async login(){
+                // post提交数据,返回的是一个token
+                const res = await this.$http.post('login', this.model)
+            }
+        }
+    }
+</script>
+```
+
+- 后端得到数据后,与数据库进行对比
+  - 根据用户名,查找数据库中的用户信息
+  - 对密码使用bcrypt的对比操作
+- 通过验证后,返回一个token
+
+```js
+app.post('/admin/api/login', async(req, res)=>{
+    const { username, password } = req.body
+    const AdminUser = require('../../models/AdminUser')
+    // 根据用户名 查找数据库中的用户信息
+    const user = await AdminUser.findOne({username}).select('+password')
+    if(!user) return res.status(422).send({message:'用户名不存在'})
+    
+    // 走到这里,用户查找到了
+    const isValid = password && user.password && require('bcrypt').compareSync(password, user.password)
+    if(!isValid) return res.status(422).send({ message:'密码错误'}) 
+    
+    // 到这里就使用jwt生成token并返回了
+    // 首先需要安装: npm i jsonwebtoken
+    const token = jwt.sign({id: username._id}, app.get('secret'))
+    res.send({token})
+})
+
+```
+
+>注意: 上面的jwt.sign接收2个参数,第一个应该是作为区分的一个对象.如用户的id. 第二个是一个密钥字符串.在express中使用app.set('secret', 'Marron'),将密钥保存在全局app中. 之后使用app.get('secret')获取该密钥.
+>
+>jwt.sign返回一个散列值,就是我们需要的token
+
+### 异常处理
+
+http响应并不总是成功的,比如在登录这一块.用户名或密码很容易不成功.这个时候就会返回一个403 forbidden,其中一个比较好的解决方案是: 使用axios的拦截器,对http的返回进行拦截. 若发生错误,使用Vue原型上面的`$message.error`(前面已经使用elementUI挂载了)方法给出错误提示
+
+```js
+// admin/src/http.js
+import axios from 'axios'
+import Vue from 'vue'
+
+const http = axios.create({
+    baseURL: 'http://localhost:3000/admin/api'
+})
+
+// 拦截返回的http
+http.interceptors.response.use(
+    res=>{
+        // http响应是成功的
+        return res
+    },
+    err=>{
+        if(err.message.response.data.message){
+             // http响应失败.使用Vue原型上面的方法弹出错误
+            Vue.prototype.$message.error({
+                type: 'error',
+                message: err.message.response.data.message
+            })
+            return Promise.reject(err)
+        }
+    }
+)
+```
+
+### 前端得到token
+
+1. 前端得到token中,首先将其保存在浏览器缓存中(sessionStorage或localStorage)
+2. 然后跳转到首页,在vue中使用`this.$router.push('/')`
+3. 弹出提示框,登录成功, 在vue2.x + elementUI中使用`this.$message({ type:'success', message:'登录成功'})`
+
+```html
+<template>
+    <el-form @submit.native.prevent="login">
+        <el-form-item label="用户名">
+            <el-input v-model="model.username"></el-input>
+        </el-form-item>
+        <el-form-item label="密码">
+            <el-input v-model="model.password" type="password"></el-input>
+        </el-form-item>
+    </el-form>
+</template>
+<script>
+    export default {
+        data(){
+            return {
+                model: {}
+            }
+        },
+        methods:{
+            async login(){
+                // post提交数据,返回的是一个token
+                const res = await this.$http.post('login', this.model)
+                // 将token存入localStorage中(前端磁盘),浏览器关闭了,下次还能访问到
+                localStorage.token = res.data.token
+                // 跳转到首页
+                this.$router.push('/')
+                // 弹出登录成功
+                this.$message({
+                    type: 'success',
+                    message: '登录成功'
+                })
+            }
+        }
+    }
+</script>
+```
+
+## 登录验证
+
+### 前端请求添加token
+
+如果用户登录了,那么在浏览器的localStorage中必然会保存token.在发送登录请求给后端时,需要带上这个token.在axios中使用全局的请求拦截(`http.interceptors.request.use`)来实现这个功能
+
+```js
+const http = axios.create({
+    baseURL: 'http://localhost:3000/admin/api'
+})
+http.interceptors.request.use(
+    config => {
+        if(localStorage.token) {
+            // 给请求头部加token
+            config.headers.Authorization = 'Bearer ' + localStorage.token
+        }
+        return config
+    },
+    err => {
+        return Promise.reject(err)
+    }
+)
+// 在使用`config.headers.Authorization`之后,每次http请求都会附带一个 Authorization 请求头.
+// Authorization值的最前面加 'Bearer '的原因是为了符合规范
+```
+
+在添加好了对所有路由的前端请求拦截后,如果因为登录原因,出现的错误.后端一般返回的是401状态码,这个时候,需要跳转到登陆页面,下面对状态码 401 的返回值进行处理
+
+```js
+const http = axios.create({
+    baseURL: 'http://localhost:3000/admin/api'
+})
+http.interceptors.response.use(
+    res => { return res},
+    err => {
+        // 这里处理报错
+        if(err.response.data.message){
+            Vue.prototype.$message.error({
+                type: 'error',
+                message: err.response.data.message
+            })
+            
+            // 处理401状态码: 跳转到登陆页面
+            if(err.response.status == 401) router.push('/login')
+        }
+    }
+)
+```
+
+### 后端解析请求头,验证token
+
+以上实现了前端在发送http请求时,携带token(放在Authorization请求头部中),后端需要在前端通过URL请求非登陆接口时,判断用户是否登录.可以写一个登陆验证的中间件. 如果在对正常的路径进行处理之前,先通过中间件验证.
+
+中间件的逻辑如下:
+
+- 首先通过`req.headers.authorization`获取token,若无token则设置为 `''`
+  - 若token存在则继续下一步,否则使用`assert`抛出异常
+- 然后使用`jwt`验证token.得到解码后的id
+  - 若存在id,则证明token没有被篡改,继续下一步,否则`assert`抛出异常
+- 最后根据id在数据库中查询user.并将user赋给`req.user`.
+  - 若存在req.user则跳转到下一个中间件,否则使用`assert抛出异常`
+
+```js
+// sever/middleware/auth.js
+module.exports = options =>{
+    const assert = require('http-assert') // 简化代码
+    const jwt = require('jsonwebtoken')	// 用于将token密文解析为明文
+    const AdminUser = require('../models/AdminUser') // 获取AdminUser模型
+    return async(req, res, next)=>{
+        // 获取token
+        const token = String(req.headers.authorization || '').split(' ').pop()
+        assert(token, 401, '请先登陆')	// 这里若无token: 则代表未登陆
+        const {id} = jwt.verify(token, req.app.get('secret'))
+        assert(id, 401, '请先登陆')  // 这里若无id: 则代表token过期或被篡改了
+        req.user = AdminUser.findById(id)
+        assert(req.user, 401, '请先登录') // 这里若没用找到user, 则代表给的是假id
+        await next()
+    }
+}
+```
+
+以上提供了一个中间件: 它判断token是否存在(正确),若不正确则抛出异常.若正确则继续下一个中间件.在主路由中导入.并在需要的地方添加这个中间件
+
+```js
+// server/router/admin/index.js
+module.exports = app => {
+    const express = require('express')
+    const authMiddleware = require('../../middleware/auth')
+    const router = express.router({
+        mergeParams: true
+    })
+    
+    app.use('/admin/api/rest/:resource', authMiddleware(), router)
+}
+```
+
+上面使用了assert抛出异常,因此还需要一个错误捕捉中间件,放在所有路由的最后,用于捕捉错误,它会将捕获到的异常,作为参数传递给前端.这样前端就能根据状态码做出响应的处理了
+
+```js
+// server/router/admin/index.js
+module.exports = app => {
+    const express = require('express')
+    const authMiddleware = require('../../middleware/auth')
+    const router = express.router({
+        mergeParams: true
+    })
+    
+    // 放到所有路由的后面
+    app.use(async (err, req, res, next)=>{
+        console.log(err)
+        res.status(err.statesCode || 500).send({ message: err.message})
+    })
+}
+```
+
+## 前端路由校验
+
+上面已经完成了,在发送Http请求时,进行路由校验.若401则跳转到登陆页面.但是,那些不需要HTTP请求的网页还是可以不需要登陆就能直接访问.下面有必要做前端的路由校验
+
+【具体实现如下】:
+
+- 将不需要登陆的就能访问的(主要是是Login组件)路由,添加一个`{isPublic: true}`属性
+- 然后使用全局前置守卫,在进入路由前判断`localStorage`中是否存在token.若存在,则进行下一步,否则跳转到登陆页面. 而登陆页面设置了公开访问属性,因此不会触发全局前置守卫
+
+```js
+// admin/src/router/index.js
+import Vue from 'vue'
+import VurRouter from 'vue-router'
+const routes = [
+    { 
+        path: '/login',
+        name: 'login',
+        component: Login,
+        meta: { isPublic: true}
+    },
+    {
+        path: '/',
+        name: 'main',
+        component: Main,
+        children: [ ... ]
+    }
+]
+const router = new VueRouter({
+  routes      
+})
+
+router.beforeEach((to, from, next) =>{
+    if(!to.meta.isPublic && localStorage.token){
+        return next('/login')
+    }
+    next()
+})
+export default router
+```
+
+在主函数中加载路由,并渲染更新
+
+```js
+// admin/src/main.js
+import Vue from 'vue'
+import App from './App.vue'
+import './plugins/element.js'
+import router from './router'
+
+import './style.css'
+
+Vue.config.productionTip = false
+
+new Vue({
+    router,
+    render: h => h(App)
+}).$mount('#app')
+```
+
+## 使用element上传组件发送http请求时,发送token验证
+
+在添加了登陆功能后, axios做的路由守卫只能针对使用axios发起的路由, 使用elementUI的upload上传图片时,会染过axios,因此请求头部是不带Athroization的.因此需要带上token
+
+### mixin
+
+Vue的高级语法,在主组件中添加一个方法,相当于写在各个组件中
+
+```js
+// admin/src/main.js
+Vue.mixin({
+    methods:{
+        getAuthHeaders(){
+            return {
+                Authorization: `Bearer ${localStorage.token || ''}`
+            }
+        }
+    }
+})
+```
+
+之后就可以在各个子组件的elementUI的 upload组件中使用这个方法,添加token首部了
+
+```html
+<!-- admin/src/views/ItemEdit.vue -->
+<template>
+    <div class="about">
+        <el-form @submit.native.prevent="save">
+            <el-form-item label="图标">
+                <el-upload
+                   class="avatar-uploader"
+                   :action="$http.defaults.baseURL" + '/upload'"
+                   :headers="getAuthHeaders()"
+                   :show-file-list="false"
+                   :on-success="afterUpload">
+                   <img v-if="model.icon" :src="model.icon" class="avatar" />
+                   <i v-else class="el-icon-plus avatar-uploaders-icon"></i>
+                </el-upload>
+            </el-form-item>
+        </el-form>
+    </div>
+</template>
+```
+
+
+
 
 
 

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      let num = [1, 4, 3, 4, 5]
+      //   a = new Array(num.length).fill(1),
+      //   b = new Array(num.length).fill(1),
+      //   res = []
+      // function getArr(nums) {
+      //   let len = nums.length
+      //   for (let i = 1; i < len; i++) {
+      //     // debugger
+      //     a[i] = nums[i - 1] * a[i - 1]
+      //   }
+      //   for (let i = len - 2; i > -1; i--) {
+      //     b[i] = nums[i + 1] * b[i + 1]
+      //   }
+      //   for (let i = 0; i <= len - 1; i++) {
+      //     res[i] = a[i] * b[i]
+      //   }
+      //   return res
+      // }
+      function getArr(arr) {
+        let len = arr.length,
+          a = new Array(len).fill(1),
+          b = new Array(len).fill(1),
+          res = []
+        for (let i = 1; i < len; i++) {
+          a[i] = arr[i - 1] * a[i - 1]
+        }
+        for (let i = len - 2; i > -1; i--) {
+          b[i] = arr[i + 1] * b[i + 1]
+        }
+        for (let i = 0; i <= len - 1; i++) {
+          res[i] = a[i] * b[i]
+        }
+        return res
+      }
+      console.log(getArr(num))
+
+      /*
+              a[0] = 1
+              a[1] = nums[0] * a[0]
+              a[2] = nums[1] * a[1] = nums[1] * nums[0] * a[0]
+              a[3] = nums[2] * a[2] = nums[2] * nums[1] * nums[0] * a[0]
+
+              b[3] = 1
+              b[2] = nums[3] * b[3]
+              b[1] = nums[2] * b[2] = nums[2] * nums[3] * b[3]
+              b[0] = nums[1] * b[1] = nums[1] * nums[2] * nums[3]
+
+              res[0] = a[0] * b[0] = nums[1] * nums[2] * nums[3]
+              res[1] = a[1] * b[1] = nums[0] * nums[2] * nums[3]
+              res[2] = a[2] * b[2] = nums[0] * nums[1] * nums[3]
+              res[3] = a[3] * b[3] = nums[0] * nums[1] * nums[2]
+            */
+    </script>
+  </body>
+</html>
