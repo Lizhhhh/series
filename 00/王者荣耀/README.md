@@ -1452,6 +1452,220 @@ Vue.mixin({
 </template>
 ```
 
+# 移动端网址开发
+
+## "工具样式"的概念和 SASS(SCSS)
+
+### 在webpack中使用sass
+
+安装sass和sass-loader
+
+```js
+$ npm i sass sass-loader
+```
+
+由于使用了脚手架,安装完毕后重启前端即可
+
+## 样式重置
+
+其实就是样式的初始化
+
+```scss
+// reset
+
+* {
+  box-sizing: border-box; // 以边框为准. css3盒模型
+  outline: none; // 不需要高亮: 有时候在页面中使用tab切换,a标签可能会出现高亮
+}
+
+html {
+  font-size: 13px; // 定义网址的基础字体大小 1rem = 13px
+}
+
+
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  line-height: 1.2em;
+  background: #f1f1f1;
+}
+
+a {
+  color: #999
+}
+```
+
+## 网站色彩和字体定义(colors, text)
+
+### 生成网站的色调
+
+首先定义基色掉
+
+```scss
+// colors
+$colors: ("primary": #db9e3f,
+  "white": #fff,
+  "light":#f9f9f9,
+  "grey": #999,
+  "dark-1": #343440,
+  "dark": #222,
+  "black": #000,
+);
+```
+
+使用网站的色调 + scss 生成网站的文字颜色和背景颜色
+
+```scss
+// $colors是上面定义的6种颜色
+@each $colorKey, $color in $colors{
+    .text-#{$colorKey}{
+        color: $color
+    }
+    .bg-#{$colorKey} {
+        background: $color
+    }
+}
+```
+
+以上生成的等价于下面的css(部分)
+
+```css
+.text-white{
+    color: #fff
+}
+.text-light{
+    color: #f9f9f9
+}
+.text-grey: {
+    color: #999
+}
+```
+
+### 生成字体大小
+
+假设网站主要有 10px、 12px、 13px、 14px和16px。我们想生成网站的主要字体尺寸(vscode中,下载插件 px to rem, 然后点击设置, 输入px to rem, 将Px-to-rem: Px-per-rem设为13).
+
+之后写如下函数
+
+```scss
+// font size: 10px 12px 13px 14px 16px
+$font-sizes: (xs: 10px, sm: 12px, md: 13px, lg: 14px, xl: 16px);
+```
+
+选中以上,按`alt + z`, 以上代码就变为如下
+
+```scss
+$font-sizes: (xs: 0.7692rem, sm: 0.9231rem, md: 1rem, lg: 1.0769rem, xl: 1.2308rem);
+```
+
+然后根据基字体大小生成需要的字体大小样式
+
+```scss
+@each $sizeKey, $size in $font-sizes{
+    .fs-#{$sizeKey}{
+        font-size: $size
+    }
+}
+```
+
+编译完后,会生成以下的css
+
+```css
+.fs-xs {
+    font-size: 0.7692rem
+}
+.fs-sm {
+    font-size: 0.9231rem
+}
+.fs-md {
+    font-size: 1rem
+}
+.fs-lg {
+    font-size: 1.0769rem
+}
+.fs-xl {
+    font-size: 1.2308rem
+}
+```
+
+### 生成文本的左中右对齐
+
+```scss
+@each $val in (left, center, right) {
+    .text-#{$val}{
+        text-align: $val
+    }
+}
+```
+
+以上生成等价于下面
+
+```css
+.text-left{
+    text-align: left
+}
+.text-center{
+    text-align: center
+}
+.text-right {
+    text-align: right
+}
+```
+
+## 通用flex布局样式定义
+
+flex布局
+
+``` scss
+// 主轴是水平方向
+.d-flex{
+    display: flex;
+}
+// 主轴是竖直方向
+.flex-column{
+    flex-direction: column;
+}
+.flex-1 {
+    flex: 1
+}
+.flex-grow-1 {
+    flex-grow: 1
+}
+```
+
+主轴上面的排序方式
+
+```scss
+$flex-jc:(
+    start: flex-start,
+    end: flex-end,
+    center: flex-center,
+    between: space-between,
+    around: space-around
+);
+// 主轴上面的元素排序方式
+@each $key, $value in $flex-jc{
+    .jc-#{$key} {
+        justify-content: $value
+    }
+}
+// 侧轴上面元素的排序方式
+$flex-ai:(
+    start: flex-start,
+    end: flex-end,
+    center: center,
+    stretch: stretch
+);
+
+@each $key, $value in $flex-ai{
+    .ai-#{$key} {
+        align-items: $value
+    }
+}
+```
+
+
+
 
 
 
