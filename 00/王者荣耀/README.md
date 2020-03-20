@@ -1664,13 +1664,259 @@ $flex-ai:(
 }
 ```
 
+## 常用边距(margin,padding)
+
+常用的边距属性,参考bootstrap里面类名的定义,大致有下面几种:
+
+```css
+.m-0 {
+    margin: 0rem;
+}
+.mx-0 {
+    margin-left: 0rem;
+    margin-right: 0rem
+}
+.mt-0 {
+    margin-top: 0rem;
+}
+```
+
+下面使用工具样式生成常用边距
+
+- 首先定义边距的类型: 主要有`margin`和`padding`
+
+```scss
+$spacing-types: (m: margin, p: padding)
+```
+
+- 定义边距的方向: `top、right、bottom、left`
+
+```scss
+$spacing-directions: (t: top, r: right, b: bottom, l: left)
+```
+
+- 定义边距类的基础大小
+
+```scss
+$spacing-base-size: 1rem;
+```
+
+- 定义边距类的尺寸
+
+```scss
+$spacing-sizes: (0:0, 1: 0.25, 2: 0.5, 3: 1, 4: 1.5, 5: 3)
+```
+
+之后是使用定义的变量,动态生成常用的边距类(css)
+
+```scss
+@each $typeKey, $type in $spacing-types{
+    // .m-1
+    @each $sizeKey, $size in $spacing-sizes{
+        .#{$typeKey}-#{$sizeKey} {
+            #{$type}: $size * $spacing-base-size    
+    	}
+    }
+	
+
+    @each $sizeKey, $size in $spacing-sizes{
+        // .mx-0,  .mx-1,  .mx-2 ...
+        .#{typeKey}x-#{$sizeKey} {
+            .#{$type}-left: $size * $spacing-base-size;
+            .#{$type}-right: $size * $spacing-base-size;
+        }
+
+		// .my-0,  .my-1,   .my-2  ...
+        .#{typeKey}y-#{$sizeKey} {
+            .#{$type}-top: $size * $spacing-base-size; 
+			.#{$type}-bottom: $size * $spacing-base-size;
+        }
+    }
+
+	// .mt-1, .mr-1
+    @each $directionKey, $direction in $spacing-directions{
+        @each $sizeKey, $size in $spacing-sizes{
+            // .mt-1{margin-top: 0.25rem}
+            .#{$typeKey}#{$directionKey}-#{$sizeKey}{
+                #{$type}-#{$direction}: $size * $spacing-base-size;
+            }
+        }
+    }
+}
+```
+
+# 移动端网站开发小技巧
+
+## 添加vue的路由
+
+使用vue-cli生成的前端模板,如果需要添加`vue-router`,可以采取下面的方式
+
+```cli
+$ vue add router
+```
+
+未引入router之前的入口文件(`main.js`)代码
+
+```js
+// web/src/main.js
+import Vue from 'vue'
+import App from './App.vue'
+
+
+Vue.config.productionTip = false
+
+import './style.css'
+
+new Vue({
+    render: h => h(App)
+}).$mount('#app')
+```
+
+引入之后的主入口文件(`main.js`)的代码(脚手架会自带的引入依赖包和在主入口文件中加上依赖包的代码)
+
+```js
+// web/src/main.js
+import Vue from 'vue'
+import App from './App.vue'
+
+
+Vue.config.productionTip = false
+
+import './style.css'
+import router from './router'
+
+new Vue({
+    router,
+    render: h => h(App)
+}).$mount('#app')
+```
+
+## 流程梳理
+
+下面梳理以下流程,方便后续的编码,根据`package.json`中的配置
+
+```json
+{
+    "scripts": {
+        "serve": "vue-cli-service serve"
+    }
+}
+```
+
+在命令行输入`npm run serve`,webpack会加载默认的入口js文件(`src/main.js`).在main.js中做了如下事情:
+
+- 加载Vue(相当于是VM)
+- 加载App组件
+- 引入全局样式
+- 引入路由
+- 使用render函数将App组件渲染
+
+在main.js结束之后,会在默认的端口监听http请求.然后会根据URL的请求路径,取寻找路径对应的组件进行渲染.如下路由:
+
+```js
+// src/router/index.js
+import Vue from 'vue'
+import VueRouter from 'vue-router'
+import Home from '../views/Home.vue'
+
+Vue.use(VueRouter)
+
+const routes = [
+    {
+        path: '/',
+        name: 'Home',
+        component: Home
+    }
+]
+
+const router = new VueRouter({
+    routes
+})
+export default router
+```
+
+假设默认监听的路由(不含路径)为: `http://192.168.0.106:8081/`,当访问`http://192.168.0.106:8081/#/`时.相当于访问了一个hash路由. `#`后面的代表路径.即会触发 routes中的路由规则.最后展示在浏览器中的是Home组件
+
+## vue-router梳理
+
+### 基本使用
+
+```vue
+<div id="app">
+    <router-link to="/user">User</router-link>
+    <router-link to="/register">Register</router-link>
+    <router-view></router-view>
+</div>
+<script>
+    const User = {
+        template: `<h1>User</h1>`
+    }
+    const Register = {
+        template: `<h1>Register</h1>`
+    }
+    const router = new VueRouter({
+        routes:[
+            { path: '/user', component: User },
+            { path: '/register', component: Register}
+        ]
+    })
+    const vm = new Vue({
+        el: '#app',
+        data: {},
+        router
+    })
+</script>
+```
+
+上述`to`后面跟的是hash路由的路径.对应的是hash路由`#`后面的参数在routerh中对应的是`path`的值
+
+### 路由重定向
+
+```js
+const router = new VueRouter({
+    routes:[
+        { path: '/', redirect: '/user'}
+    ]
+})
+```
+
+当访问路径`/`时,会重定向到`/user`,相当于访问路径`/user`.注: 不会像后端发起路由
+
+### 嵌套路由
+
+```js
+const router = new VueRouter({
+    routes:[
+        { 
+            path: '/register',
+            component: Register,
+            children: [
+                { path: 'register/tab1', component: Tab1 },
+                { path: 'register/tab2', component: Tab2 }
+            ]
+        }
+    ]
+})
+```
+
+类似于Tab栏的切换,点击tab1切换到Tab1组件.`<router-view></router-view>`相当于组件显示的地方
 
 
 
+## 自制导航栏样式-active样式
 
+思路是,在tab栏的父节点添加3px宽度的下边框,颜色为透明,在active下添加3px的下边框,颜色为白色.在scss中的写法如下:
 
-
-
-
-
+```scss
+// nav
+.nav{
+    .nav-item{
+        border-bottom: 3px solid transparent;
+        padding: 0.2rem;
+        &.active{
+            border-bottom: 3px solid #fff;
+        }
+    }
+}
+```
 
